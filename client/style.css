@@ -1,0 +1,18 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: monospace;
+}
+
+main {
+  margin: 0 auto;
+  max-width: 748px;
+  padding: 2rem 10px 2rem;
+}
+
+button {
+  font-size: inherit;
+}

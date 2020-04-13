@@ -5,8 +5,9 @@ module.exports = {
     // Web server. Serves statc web pages.
     {
       type: 'http',
-      config: {        // [required] : the directory where the html, css, js files are located
-        staticDir: '/tmp',
+      config: {
+        // [required] : the directory where the html, css, js files are located
+        staticDir: './client',
         // [required] : port where the web server will be running. Note that by default
         // websockets will be running on the same port.
         port: 8000
