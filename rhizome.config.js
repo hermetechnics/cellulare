@@ -32,7 +32,7 @@ module.exports = {
         rootUrl: '/',
         // [required] : Port on which the websocket server will be listening.
         // Note that you can use the same port as an HTTP server.
-        port: 8001,
+        port: 8000,
         // [default=200] : maximum number of sockets that can be connected simultaneously on
         // the web socket server.
         maxSockets: 200

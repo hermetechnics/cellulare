@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cellulare</title>
+  <script src="/rhizome/rhizome.js"></script>
   <script defer type="module" src="./cellulare-client.js"></script>
   <link href="style.css" rel="stylesheet">
 </head>
@@ -11,6 +12,12 @@
   <main>
     <h1>Cellulare</h1>
     <button id="start">Start</button>
+    <button id="play" hidden>Play</button>
+    <form id="settings">
+      <label for="frequency">Pitch:</label>
+      <input id="frequency" type="range" min="220" max="880" value="440">
+    </form>
+    <div role="presentation" id="led"></div>
   </main>
 </body>
 </html>
