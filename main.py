@@ -1,15 +1,30 @@
 import os
 
-import tornado.ioloop
-from tornado.options import define, options, parse_command_line
-import tornado.web
-
+import numpy as np
 import socketio
+import tornado.ioloop
+import tornado.web
+from tornado.options import define, options, parse_command_line
+
+from game_of_life.cell import Cell
+from game_of_life.game_of_life import GameOfLife
+
+np.random.seed(42)
 
 define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=False, help="run in debug mode")
 
 sio = socketio.AsyncServer(async_mode='tornado')
+
+game_of_life = None
+spirits = []
+
+
+"""
+TODO: save the history of the grid for playback
+TODO: send information back to specific client
+"""
+
 
 async def background_task():
     """Example of how to send server generated events to clients.
@@ -17,10 +32,13 @@ async def background_task():
     """
     count = 0
     while True:
-        await sio.sleep(10)
+        await sio.sleep(1)
         count += 1
-        print('emitting pulse', count)
-        await sio.emit('pulse', { 'data': count })
+        game_of_life.tick()
+        print("step {}".format(count))
+        for spirit in spirits:
+            await sio.emit("test", to=spirit.client_id)
+            # TODO: this doesn't work yet
 
 @sio.event
 async def test_event(sid, message):
@@ -32,6 +50,8 @@ async def disconnect_request(sid):
 
 @sio.event
 async def connect(sid, environ):
+    new_cell = Cell(game=game_of_life, client_id=sid)
+    spirits.append(new_cell)
     print('Client connected', sid)
 
 @sio.event
@@ -53,5 +73,8 @@ def main():
     app.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
 
+
 if __name__ == "__main__":
+    game_of_life = GameOfLife()
+    print("Starting the server.")
     main()
