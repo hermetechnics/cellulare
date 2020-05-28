@@ -18,7 +18,6 @@ startButton.addEventListener('click', () => {
   playButton.hidden = false;
 
   playButton.addEventListener('click', () => {
-    console.log(frequencyInput.value);
     client.send('/cellulare/ping', [client.id, parseInt(frequencyInput.value)]);
   });
 
