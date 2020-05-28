@@ -1,5 +1,6 @@
 import { samples } from './config.js';
 import { createAudioEngine } from './audio.js';
+import { startAnimating } from './network.js';
 
 const testEventButton = document.getElementById('test-event');
 const startAudioButton = document.getElementById('start-audio');
@@ -56,6 +57,7 @@ const startApp = () => {
   });
 
   startAudioButton.addEventListener('click', startAudio);
+  startAnimating();
 };
 
 startApp();
