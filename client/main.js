@@ -1,18 +1,8 @@
-import { WEBSOCKET_URL, samples } from './config.js';
+import { samples } from './config.js';
 import { createAudioEngine } from './audio.js';
 
 const testEventButton = document.getElementById('test-event');
 const startAudioButton = document.getElementById('start-audio');
-
-/**
- * In this function we can handle messages coming from the server
- * we can play sounds, change visuals, etc.
- *
- * @param {Object} data the message data
- */
-const handleMessage = data => {
-  console.log(data);
-};
 
 const startAudio = async () => {
   const { loadSamples, playSample, setMasterGain } = createAudioEngine();
@@ -30,14 +20,14 @@ const startAudio = async () => {
 
   // the order in which we schedule audio events doesn't matter
   // the gain change below will happen before the snare playback above
-  setMasterGain(0.5, 3) // 3 seconds later
+  setMasterGain(0.15, 3) // 3 seconds later
 };
 
 /**
  * Initialises the app
  */
 const startApp = () => {
-  const socket = io(WEBSOCKET_URL);
+  const socket = io();
   // some basic connection event handlers
   // TODO: provide feedback to the user when they trigger
   socket.on('connect', () => {
@@ -53,12 +43,19 @@ const startApp = () => {
     }
   });
 
-  socket.on('message', handleMessage);
+  // this is how we can subscribe to various events from the server, and respond to them
+  socket.on('pulse', data => {
+    console.info('pulse', data);
+    // do something with `data`
+    // ...
+  });
 
   testEventButton.addEventListener('click', () => {
     // if the button is clicked, we send a test event to the server
-    socket.emit('test-event', { testData: 'test' });
+    socket.emit('test_event', { testData: 'test' });
   });
 
   startAudioButton.addEventListener('click', startAudio);
 };
+
+startApp();
