@@ -35,8 +35,7 @@ async def background_task():
         await sio.sleep(1)
         count += 1
         game_of_life.tick()
-        print("step {}".format(count))
-        await sio.emit("grid", game_of_life.grid.tolist())
+        await sio.emit("grid", { 'grid': game_of_life.grid.tolist(), 'count': count })
 
         for spirit in spirits:
             await sio.emit("test", to=spirit.client_id)

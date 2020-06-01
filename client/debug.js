@@ -20,8 +20,11 @@ const startApp = () => {
   });
 
   // this is how we can subscribe to various events from the server, and respond to them
-  socket.on('grid', data => {
-    grid.innerText = data.map(row => row.map(toEmoji).join(' ')).join('\n');
+  socket.on('grid', ({ grid: gridData, count }) => {
+    grid.innerText = `
+Count: ${count}
+${gridData.map(row => row.map(toEmoji).join(' ')).join('\n')}
+    `;
   });
 };
 

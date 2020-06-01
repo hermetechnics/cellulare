@@ -10,7 +10,7 @@ class GameOfLife:
         self.grid_size = grid_size
         self.density = 0.3
         self.grid = np.random.choice(a=[ON, OFF], size=(grid_size, grid_size), p=[self.density, 1-self.density])
-        print(self.grid)
+        print("initial state: \n", self.grid)
 
     def tick(self):
         new_grid = self.grid.copy()
@@ -21,7 +21,6 @@ class GameOfLife:
                 new_grid[i,j] = self.apply_rule(self.grid[i, j], total)
 
         self.grid = new_grid
-        print(self.grid)
 
     def apply_rule(self, current_cell, total):
         if current_cell == ON:
