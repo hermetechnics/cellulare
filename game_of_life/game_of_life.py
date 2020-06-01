@@ -6,10 +6,10 @@ OFF = 0
 
 
 class GameOfLife:
-    def __init__(self, gird_size=10):
-        self.grid_size = gird_size
+    def __init__(self, grid_size=10):
+        self.grid_size = grid_size
         self.density = 0.3
-        self.grid = np.random.choice(a=[ON, OFF], size=(gird_size, gird_size), p=[self.density, 1-self.density])
+        self.grid = np.random.choice(a=[ON, OFF], size=(grid_size, grid_size), p=[self.density, 1-self.density])
         print(self.grid)
 
     def tick(self):

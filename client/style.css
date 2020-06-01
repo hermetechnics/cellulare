@@ -1,3 +1,7 @@
+html {
+  background: black;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -25,4 +29,8 @@ button {
   width: 100vw;
   height: 100vh;
   z-index: -1;
+}
+
+#grid {
+  font-size: 1.618em;
 }
