@@ -1,3 +1,4 @@
+import json
 import os
 
 import numpy as np
@@ -42,7 +43,8 @@ async def background_task():
         await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(), 'count': count })
 
         for spirit in spirits:
-            await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit))}, room=spirit.client_id)
+            await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
+                                      'neighbours': "{}".format(game_of_life.get_neighbours(spirit))}, room=spirit.client_id)
 
 @sio.event
 async def test_event(sid, message):
