@@ -10,9 +10,9 @@ export const samples = {
 
 export const microphoneStreamConfig = {
   audio: {
-    echoCancellation: false,
+    echoCancellation: true,
     autoGainControl: false,
-    noiseSuppression: false,
+    noiseSuppression: true,
     channelCount: 1,
   },
   video: false,
