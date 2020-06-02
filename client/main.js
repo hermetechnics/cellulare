@@ -1,35 +1,54 @@
-import { samples } from './config.js';
+import { samples, beatDetection } from './config.js';
+import { throttle } from './util.js';
 import { createAudioEngine } from './audio.js';
 import { startAnimating } from './network.js';
 
-const testEventButton = document.getElementById('test-event');
 const startAudioButton = document.getElementById('start-audio');
+const introSection = document.getElementById('intro-section');
+const audioSetupSection = document.getElementById('audio-init');
+const audioReadyButton = document.getElementById('audio-init-ready');
+const thresholdIndicator = document.getElementById('threshold-indicator');
+const thresholdSlider = document.getElementById('bd-threshold-slider');
 
 /**
  * Initialises the app
  */
 const startApp = () => {
+  const socket = io();
+
   let audioEngine, loadedSamples;
+
+  // THIS IS WHAT TRIGGERS WHEN BEAT IS DETECTED
+  const onBeatDetect = rms => {
+    thresholdIndicator.animate([
+        { backgroundColor: '#FF000000', offset: 0 },
+        { backgroundColor: '#FF0000FF', offset: 0.05 },
+        { backgroundColor: '#FF000000', offset: 1 },
+      ], { duration: 2000, easing: 'ease-out' });
+  };
 
   // THIS IS WHERE WE INITIALISE AUDIO
   startAudioButton.addEventListener('click', async () => {
-    audioEngine = createAudioEngine();
-    loadedSamples = await loadSamples(samples);
+    audioEngine = await createAudioEngine({ onBeatDetect });
+    console.info('Engine created');
+
+    thresholdSlider.addEventListener('change', throttle(() => {
+      console.log(`setting threshold to ${parseFloat(thresholdSlider.value)}`);
+      audioEngine.setBeatDetectionThreshold(parseFloat(thresholdSlider.value));
+    }, beatDetection.THROTTLE_DURATION));
+
+    loadedSamples = await audioEngine.loadSamples(samples);
     console.info('Samples loaded');
 
-    audioEngine.playSample(loadedSamples.kick);     // immediately
-    audioEngine.playSample(loadedSamples.hihat, 2); // 2 seconds later
-
-    await audioEngine.playSample(loadedSamples.snare, 3); // 3 seconds later, and wait for it to end
-    audioEngine.playSample(loadedSamples.snare, 2); // 2 seconds after the sample above stops playing
-    audioEngine.playSample(loadedSamples.snare, 4); // 4 seconds later
-
-    // the order in which we schedule audio events doesn't matter
-    // the gain change below will happen before the snare playback above
-    audioEngine.setMasterGain(0.15, 3) // 3 seconds later
+    introSection.hidden = true;
+    audioSetupSection.hidden = false;
   });
 
-  const socket = io();
+  audioReadyButton.addEventListener('click', () => {
+    audioSetupSection.hidden = true;
+    startAnimating();
+  });
+
   // some basic connection event handlers
   // TODO: provide feedback to the user when they trigger
   socket.on('connect', () => {
@@ -47,18 +66,10 @@ const startApp = () => {
 
   // this is how we can subscribe to various events from the server, and respond to them
   socket.on('pulse', data => {
-    console.info('pulse', data);
+    // console.info('pulse', data);
     // do something with `data`
     // ...
   });
-
-  testEventButton.addEventListener('click', () => {
-    // if the button is clicked, we send a test event to the server
-    socket.emit('test_event', { testData: 'test' });
-  });
-
-
-  startAnimating();
 };
 
 startApp();

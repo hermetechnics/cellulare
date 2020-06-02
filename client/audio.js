@@ -1,3 +1,6 @@
+import { microphoneStreamConfig } from './config.js';
+import { createBeatDetector } from './beat-detection.js';
+
 // The following 2nd order functions first take an audio context + any required audio nodes
 // and return functions which apply operations to the context/nodes
 const loadSample = audioContext => async ([ name, url ]) => {
@@ -30,13 +33,19 @@ const setGain = (audioContext, gainNode) => (gain, time = 0) => {
   gainNode.gain.setValueAtTime(gain, audioContext.currentTime + time);
 };
 
+const getMicrophoneInput = async audioContext => {
+  const mediaStream = await navigator.mediaDevices.getUserMedia(microphoneStreamConfig);
+  const source = new MediaStreamAudioSourceNode(audioContext, { mediaStream });
+  return source;
+};
+
 /**
  * Initialises the audio context and returns an object
  * with several functions to control the audio engine.
  *
  * Must be triggered by a user interaction (mouse click, keyboard input)
  */
-export const createAudioEngine = () => {
+export const createAudioEngine = async ({ onBeatDetect }) => {
   const audioContext = new AudioContext();
   // this node provides the master volume control
   const master = new GainNode(audioContext, { gain: 1 });
@@ -46,9 +55,14 @@ export const createAudioEngine = () => {
     .connect(master)
     .connect(audioContext.destination);
 
+  const detector = createBeatDetector(audioContext, onBeatDetect);
+  const microphone = await getMicrophoneInput(audioContext);
+  microphone.connect(detector.processor);
+
   return {
     loadSamples: loadSamples(audioContext),
     playSample: playSample(audioContext, compressor),
     setMasterGain: setGain(audioContext, master),
+    setBeatDetectionThreshold: detector.setThreshold,
   };
 };
