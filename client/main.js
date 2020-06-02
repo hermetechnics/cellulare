@@ -40,6 +40,10 @@ const startApp = () => {
     loadedSamples = await audioEngine.loadSamples(samples);
     console.info('Samples loaded');
 
+    audioEngine.playSample(loadedSamples.snare, 0, -1);
+    audioEngine.playSample(loadedSamples.snare, 2, 1);
+    audioEngine.playSample(loadedSamples.snare, 3, 0);
+
     introSection.hidden = true;
     audioSetupSection.hidden = false;
   });
