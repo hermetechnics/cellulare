@@ -1,5 +1,5 @@
 import { samples, beatDetection } from './config.js';
-import { throttle, randomSwing } from './util.js';
+import { throttle, randomSwing, chooseRandomlyFrom } from './util.js';
 import { createAudioEngine } from './audio.js';
 import { startAnimating } from './network.js';
 
@@ -72,20 +72,16 @@ const initAudioSetup = context => new Promise((nextStep) => {
 
 const initPulse = async context => {
   const { socket, audioEngine, loadedSamples } = context;
-
-  const randomKick = () => {
-    let kicks = [loadedSamples.kick1, loadedSamples.kick2, loadedSamples.kick3, loadedSamples.kick4];
-    return kicks[Math.floor(Math.random() * 4)]
-  }
+  const kicks = [loadedSamples.kick1, loadedSamples.kick2, loadedSamples.kick3, loadedSamples.kick4];
 
   // this is how we can subscribe to various events from the server, and respond to them
   socket.on('pulse', data => {
     console.info('pulse', data);
 
-    audioEngine.playSample(randomKick(), 0 + randomSwing());
-    audioEngine.playSample(randomKick(), 0.25 + randomSwing());
-    audioEngine.playSample(randomKick(), 0.5 + randomSwing());
-    audioEngine.playSample(randomKick(), 0.75 + randomSwing());
+    audioEngine.playSample(chooseRandomlyFrom(kicks), 0 + randomSwing());
+    audioEngine.playSample(chooseRandomlyFrom(kicks), 0.25 + randomSwing());
+    audioEngine.playSample(chooseRandomlyFrom(kicks), 0.5 + randomSwing());
+    audioEngine.playSample(chooseRandomlyFrom(kicks), 0.75 + randomSwing());
 
     if(parseInt(data.my_cell) == 1){
       audioEngine.playSample(loadedSamples.rattle, 0 + randomSwing());
