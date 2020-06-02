@@ -1,5 +1,5 @@
 import { samples, beatDetection, playbackConfig } from './config.js';
-import { throttle, range, randomSwing, chooseRandomlyFrom } from './util.js';
+import { throttle, range, randomSwing, chooseRandomlyFrom, toggleFullscreen } from './util.js';
 import { createAudioEngine } from './audio.js';
 import { startAnimating, setGlowiness } from './network.js';
 
@@ -100,6 +100,16 @@ const initPulse = async context => {
   return context;
 };
 
+const initExperimentInterface = async context => {
+  document.getElementById('app-title').hidden = true;
+
+  document.addEventListener('keypress', event => {
+    if (event.key.toLowerCase() === 'f') toggleFullscreen();
+  });
+
+  return context;
+};
+
 const init = async steps => {
   let context;
 
@@ -118,4 +128,5 @@ init([
   initAudioEngine,
   initAudioSetup,
   initPulse,
+  initExperimentInterface,
 ]);

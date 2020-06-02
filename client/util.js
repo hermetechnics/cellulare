@@ -45,3 +45,17 @@ export const range = function* (start, end, step = 1) {
     index++;
   }
 }
+
+export const toggleFullscreen = async () => {
+  const elem = document.body;
+
+  if (!document.fullscreenElement) {
+    try {
+      await elem.requestFullscreen();
+    } catch(e) {
+      console.error(e);
+    }
+  } else {
+    document.exitFullscreen();
+  }
+}
