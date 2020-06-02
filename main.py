@@ -50,6 +50,11 @@ async def background_task():
 async def test_event(sid, message):
     print('received test_event from the client', message)
 
+@sio.on('reset_game')
+def reset_game(sid, data):
+    print("resetting game!")
+    game_of_life.reset_game()
+
 @sio.event
 async def connect(sid, environ):
     new_cell = Cell(game=game_of_life, client_id=sid)

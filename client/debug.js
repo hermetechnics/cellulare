@@ -1,4 +1,5 @@
 const grid = document.getElementById('grid');
+const resetButton = document.getElementById('reset_game');
 
 const toEmoji = char => {
   if (parseInt(char) == '2') return '🌱';
@@ -30,6 +31,12 @@ const startApp = () => {
     ${gridData.map(row => row.map(toEmoji).join(' ')).join('\n')}
         `;
       });
+
+  resetButton.addEventListener('click', () => {
+    console.info("reset!")
+    socket.emit('reset_game', { testData: 'test' });
+  });
+
 };
 
 startApp();

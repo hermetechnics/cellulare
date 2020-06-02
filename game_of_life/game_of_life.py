@@ -29,6 +29,8 @@ class GameOfLife:
 
         return grid_with_spirits
 
+    def reset_game(self):
+        self.grid = self.grid_init()
 
     def tick(self):
         new_grid = self.grid.copy()
