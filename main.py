@@ -25,11 +25,18 @@ spirits = []
 TODO: save the history of the grid for playback
 TODO: do not register debug as "spirit"
 
-IDEAS: 
+IDEAS:
 - slightly swing speed by the temperature on the grid (how many activated points)
-- 'resonance' between two entities firing in the same time 
+- 'resonance' between two entities firing in the same time
 """
 
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("index.html")
+
+class DebugHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("debug.html")
 
 async def background_task():
     """Example of how to send server generated events to clients.
@@ -82,11 +89,14 @@ def main():
     parse_command_line()
     app = tornado.web.Application(
         [
+            (r"/", MainHandler),
+            (r"/debug", DebugHandler),
             (r"/socket.io/", socketio.get_tornado_handler(sio)),
             (r'/(.*)', tornado.web.StaticFileHandler, {
                 'path': os.path.join(os.path.dirname(__file__), 'client')
             }),
         ],
+        template_path=os.path.join(os.path.dirname(__file__), "client"),
         debug=options.debug,
     )
     sio.start_background_task(background_task)
