@@ -55,6 +55,16 @@ def reset_game(sid, data):
     print("resetting game!")
     game_of_life.reset_game()
 
+@sio.on('trigger_activity')
+def trigger_activity(sid, data):
+    # TODO: if activity has some additional value than boolean parse here:
+    activity = True
+
+    print("User triggered activity")
+    spirit = next((s for s in spirits if s.client_id == sid), None)
+    if spirit:
+        spirit.activate(activity)
+
 @sio.event
 async def connect(sid, environ):
     new_cell = Cell(game=game_of_life, client_id=sid)
