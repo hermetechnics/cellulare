@@ -29,6 +29,8 @@ class GameOfLife:
 
         return grid_with_spirits
 
+    def reset_game(self):
+        self.grid = self.grid_init()
 
     def tick(self):
         new_grid = self.grid.copy()
@@ -48,6 +50,11 @@ class GameOfLife:
 
         self.grid = new_grid
 
+    def get_neighbours(self, spirit):
+        coordinates = self.get_neighbour_coordinates_pairs(spirit.coordinate_x, spirit.coordinate_y)
+        return [self.get_grid_cell(coordinate[0], coordinate[1]) for coordinate in coordinates]
+
+
     def apply_rule(self, current_cell, total):
         if current_cell == ON:
             if (total < 2) or (total > 3):
@@ -58,14 +65,15 @@ class GameOfLife:
         return current_cell
 
     def get_neighbour_coordinates_pairs(self, coordinate_x, coordinate_y):
-        return [(coordinate_x, (coordinate_y - 1)),
-                (coordinate_x, (coordinate_y + 1)),
-                ((coordinate_x - 1), coordinate_y),
+        """anti-clockwise"""
+        return [((coordinate_x - 1), (coordinate_y - 1)),
+                (coordinate_x, (coordinate_y - 1)),
+                ((coordinate_x + 1), (coordinate_y - 1)),
                 ((coordinate_x + 1), coordinate_y),
                 ((coordinate_x + 1), (coordinate_y + 1)),
-                ((coordinate_x + 1), (coordinate_y - 1)),
+                (coordinate_x, (coordinate_y + 1)),
                 ((coordinate_x - 1), (coordinate_y + 1)),
-                ((coordinate_x - 1), (coordinate_y - 1))]
+                ((coordinate_x - 1), coordinate_y)]
 
     def get_grid_cell(self, coordinate_x, coordinate_y):
         """gets toroidal coordinate"""

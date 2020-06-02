@@ -66,10 +66,41 @@ const startApp = () => {
 
   // this is how we can subscribe to various events from the server, and respond to them
   socket.on('pulse', data => {
-    // console.info('pulse', data);
-    // do something with `data`
-    // ...
+    console.info('pulse', data);
+
+    audioEngine.playSample(randomKick(), 0 + randomSwing());
+    audioEngine.playSample(randomKick(), 0.25 + randomSwing());
+    audioEngine.playSample(randomKick(), 0.5 + randomSwing());
+    audioEngine.playSample(randomKick(), 0.75 + randomSwing());
+
+    if(parseInt(data.my_cell) == 1){
+      audioEngine.playSample(loadedSamples.rattle, 0 + randomSwing());
+    }
+
+    for (let i = 0; i < data.neighbours.length; i++) {
+      if(parseInt(data.neighbours[i]) == 1){
+        audioEngine.playSample(loadedSamples.rattle_distant, 0.25 + i * (0.0625))
+      }
+    }
   });
+
+  // adding more human feel to the drumming
+  function randomSwing () {
+    return (Math.random() - 0.5) / 70;
+  }
+
+  function randomKick () {
+    let kicks = [loadedSamples.kick1, loadedSamples.kick2, loadedSamples.kick3, loadedSamples.kick4];
+    return kicks[Math.floor(Math.random() * 4)]
+  }
+
+  testEventButton.addEventListener('click', () => {
+    // if the button is clicked, we send a test event to the server
+    socket.emit('test_event', { testData: 'test' });
+  });
+
+
+  startAnimating();
 };
 
 startApp();

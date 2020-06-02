@@ -1,3 +1,4 @@
+import json
 import os
 
 import numpy as np
@@ -42,11 +43,27 @@ async def background_task():
         await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(), 'count': count })
 
         for spirit in spirits:
-            await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit))}, room=spirit.client_id)
+            await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
+                                      'neighbours': "{}".format(game_of_life.get_neighbours(spirit))}, room=spirit.client_id)
 
 @sio.event
 async def test_event(sid, message):
     print('received test_event from the client', message)
+
+@sio.on('reset_game')
+def reset_game(sid, data):
+    print("resetting game!")
+    game_of_life.reset_game()
+
+@sio.on('trigger_activity')
+def trigger_activity(sid, data):
+    # TODO: if activity has some additional value than boolean parse here:
+    activity = True
+
+    print("User triggered activity")
+    spirit = next((s for s in spirits if s.client_id == sid), None)
+    if spirit:
+        spirit.activate(activity)
 
 @sio.event
 async def connect(sid, environ):
