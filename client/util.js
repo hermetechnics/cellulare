@@ -36,4 +36,12 @@ export const throttle = (func, wait, options = {}) => {
 // adding more human feel to the drumming
 export const randomSwing = () => (Math.random() - 0.5) / 70;
 
-export const chooseRandomlyFrom = list => list[Math.floor(Math.random * list.length)];
+export const chooseRandomlyFrom = list => list[Math.floor(Math.random() * list.length)];
+
+export const range = function* (start, end, step = 1) {
+  let index = start;
+  while (index < end) {
+    yield index;
+    index++;
+  }
+}

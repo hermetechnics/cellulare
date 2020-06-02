@@ -18,6 +18,10 @@ export const microphoneStreamConfig = {
   video: false,
 };
 
+export const playbackConfig = {
+  STEPS_PER_SECOND: 4,
+};
+
 export const beatDetection = {
   BUFFER_SIZE: 2048,
   DEFAULT_THRESHOLD: 0.01,

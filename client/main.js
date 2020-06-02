@@ -1,5 +1,5 @@
-import { samples, beatDetection } from './config.js';
-import { throttle, randomSwing, chooseRandomlyFrom } from './util.js';
+import { samples, beatDetection, playbackConfig } from './config.js';
+import { throttle, range, randomSwing, chooseRandomlyFrom } from './util.js';
 import { createAudioEngine } from './audio.js';
 import { startAnimating } from './network.js';
 
@@ -78,10 +78,10 @@ const initPulse = async context => {
   socket.on('pulse', data => {
     console.info('pulse', data);
 
-    audioEngine.playSample(chooseRandomlyFrom(kicks), 0 + randomSwing());
-    audioEngine.playSample(chooseRandomlyFrom(kicks), 0.25 + randomSwing());
-    audioEngine.playSample(chooseRandomlyFrom(kicks), 0.5 + randomSwing());
-    audioEngine.playSample(chooseRandomlyFrom(kicks), 0.75 + randomSwing());
+    for (const i of range(0, playbackConfig.STEPS_PER_SECOND)) {
+      const sample = chooseRandomlyFrom(kicks);
+      audioEngine.playSample(sample, i * (1 / playbackConfig.STEPS_PER_SECOND) + randomSwing());
+    }
 
     if(parseInt(data.my_cell) == 1){
       audioEngine.playSample(loadedSamples.rattle, 0 + randomSwing());
