@@ -11,7 +11,7 @@ FROZEN_LIMIT = 5
 class GameOfLife:
     def __init__(self, grid_size=10):
         self.grid_size = grid_size
-        self.density = 0.1
+        self.density = 0.4
         self.empty_ticks = 0
 
         self.grid = self.grid_init()
@@ -54,17 +54,33 @@ class GameOfLife:
                 return ON
         return current_cell
 
-    def calculate_neighbours(self, i, j):
+    def get_neighbour_coordinates_pairs(self, i, j):
+        return [(i, (j - 1)),
+                (i, (j + 1)),
+                ((i - 1), j),
+                ((i + 1), j),
+                ((i + 1), (j + 1)),
+                ((i + 1), (j - 1)),
+                ((i - 1), (j + 1)),
+                ((i - 1), (j - 1))]
+
+    def get_grid(self, coordinate_x, coordinate_y):
+        """returns toroidal coordinate"""
+        return self.grid[coordinate_x % self.grid_size][coordinate_y % self.grid_size]
+
+    def calculate_neighbours(self, coordinate_x, coordinate_y):
         """ compute 8-neghbor sum
             using toroidal boundary conditions - x and y wrap around
             so that the simulaton takes place on a toroidal surface.
-            borrowed from https://www.geeksforgeeks.org/conways-game-life-python-implementation/ """
-        return int((self.grid[i, (j - 1) % self.grid_size] + self.grid[i, (j + 1) % self.grid_size] +
-                    self.grid[(i - 1) % self.grid_size, j] + self.grid[(i + 1) % self.grid_size, j] +
-                    self.grid[(i - 1) % self.grid_size, (j - 1) % self.grid_size] + self.grid[
-                        (i - 1) % self.grid_size, (j + 1) % self.grid_size] +
-                    self.grid[(i + 1) % self.grid_size, (j - 1) % self.grid_size] + self.grid[
-                        (i + 1) % self.grid_size, (j + 1) % self.grid_size]))
+            idea borrowed from https://www.geeksforgeeks.org/conways-game-life-python-implementation/ """
+        coordinates = self.get_neighbour_coordinates_pairs(coordinate_x, coordinate_y)
+        result = 0
+        for coordinate in coordinates:
+            result += self.get_grid(coordinate[0], coordinate[1])
+        return result
 
     def get_cell(self, spirit):
         return self.grid[spirit.coordinate_x][spirit.coordinate_y]
+
+    def activate_neighbours(self, coordinate_x, coordinate_y):
+        pass
