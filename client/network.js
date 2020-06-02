@@ -190,6 +190,8 @@ onWindowResize();
 window.addEventListener('resize', onWindowResize, false);
 document.body.addEventListener('mousemove', onMouseMove, false);
 
+let animationStartTime = 0;
+
 const animate = time => {
   requestAnimationFrame(animate);
 
@@ -197,9 +199,12 @@ const animate = time => {
   MouseY.update();
   Glowiness.update();
 
-  draw(time, MouseX.getValue(), MouseY.getValue(), canvas.width, canvas.height, Glowiness.getValue());
+  draw(time - animationStartTime, MouseX.getValue(), MouseY.getValue(), canvas.width, canvas.height, Glowiness.getValue());
 }
 
-export const startAnimating = () => requestAnimationFrame(animate);
+export const startAnimating = () => {
+  animationStartTime = performance.now();
+  requestAnimationFrame(animate);
+};
 
 export const setGlowiness = target => Glowiness.setTarget(target);
