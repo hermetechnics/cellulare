@@ -1,3 +1,5 @@
+from random import random
+
 import numpy as np
 
 ON = 1
@@ -27,13 +29,14 @@ class GameOfLife:
 
         return grid_with_spirits
 
+
     def tick(self):
         new_grid = self.grid.copy()
-        for i in range(self.grid_size):
-            for j in range(self.grid_size):
+        for coordinate_x in range(self.grid_size):
+            for coordinate_y in range(self.grid_size):
 
-                total = self.calculate_neighbours(i, j)
-                new_grid[i,j] = self.apply_rule(self.grid[i, j], total)
+                total = self.calculate_neighbours(coordinate_x, coordinate_y)
+                new_grid[coordinate_x,coordinate_y] = self.apply_rule(self.grid[coordinate_x, coordinate_y], total)
 
         if np.count_nonzero(np.subtract(self.grid, new_grid)) == 0:
             self.empty_ticks += 1
@@ -54,19 +57,24 @@ class GameOfLife:
                 return ON
         return current_cell
 
-    def get_neighbour_coordinates_pairs(self, i, j):
-        return [(i, (j - 1)),
-                (i, (j + 1)),
-                ((i - 1), j),
-                ((i + 1), j),
-                ((i + 1), (j + 1)),
-                ((i + 1), (j - 1)),
-                ((i - 1), (j + 1)),
-                ((i - 1), (j - 1))]
+    def get_neighbour_coordinates_pairs(self, coordinate_x, coordinate_y):
+        return [(coordinate_x, (coordinate_y - 1)),
+                (coordinate_x, (coordinate_y + 1)),
+                ((coordinate_x - 1), coordinate_y),
+                ((coordinate_x + 1), coordinate_y),
+                ((coordinate_x + 1), (coordinate_y + 1)),
+                ((coordinate_x + 1), (coordinate_y - 1)),
+                ((coordinate_x - 1), (coordinate_y + 1)),
+                ((coordinate_x - 1), (coordinate_y - 1))]
 
-    def get_grid(self, coordinate_x, coordinate_y):
-        """returns toroidal coordinate"""
+    def get_grid_cell(self, coordinate_x, coordinate_y):
+        """gets toroidal coordinate"""
         return self.grid[coordinate_x % self.grid_size][coordinate_y % self.grid_size]
+
+    def set_grid_cell(self, coordinate_x, coordinate_y, value):
+        """sets toroidal coordinate"""
+        self.grid[coordinate_x % self.grid_size][coordinate_y % self.grid_size] = value
+
 
     def calculate_neighbours(self, coordinate_x, coordinate_y):
         """ compute 8-neghbor sum
@@ -76,11 +84,15 @@ class GameOfLife:
         coordinates = self.get_neighbour_coordinates_pairs(coordinate_x, coordinate_y)
         result = 0
         for coordinate in coordinates:
-            result += self.get_grid(coordinate[0], coordinate[1])
+            result += self.get_grid_cell(coordinate[0], coordinate[1])
         return result
 
-    def get_cell(self, spirit):
-        return self.grid[spirit.coordinate_x][spirit.coordinate_y]
+    def get_spirit_cell(self, spirit):
+        return self.get_grid_cell(spirit.coordinate_x, spirit.coordinate_y)
 
     def activate_neighbours(self, coordinate_x, coordinate_y):
-        pass
+        """when activity is triggered, we randomly set OFF values in the proximity to ON"""
+        coordinates = self.get_neighbour_coordinates_pairs(coordinate_x, coordinate_y)
+        for coordinate in coordinates:
+            if self.get_grid_cell(coordinate[0], coordinate[1]) == OFF:
+                self.set_grid_cell(coordinate[0], coordinate[1], random.choice([ON, OFF]))
