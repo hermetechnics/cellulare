@@ -11,8 +11,31 @@
 <body>
   <main>
     <h1>A Journey into the Network</h1>
-    <button id="test-event">Send Test Event</button>
-    <button id="start-audio">Start Audio</button>
+    <section id="intro-section">
+      <p>This is a communal experiment, in which we attempt to harness the potential of a networked communion
+        to enhance a shamanic practice.
+      </p>
+      <p>Created by Karin Vališová and Jakub Fiala.</p>
+      <button id="start-audio">Start Setup</button>
+    </section>
+
+    <section id="audio-init" hidden>
+      <h2>Let's set up the sound first</h2>
+      <p>The experiment uses the signal from your computer's microphone to interact with the network.</p>
+      <p>We take privacy seriously &mdash; the audio itself never leaves your computer.
+        The app merely detects when a loud sound occurs. The indicator below will blink when a sound is detected.</p>
+      <div id="threshold-indicator"></div>
+      <p>Try moving the slider below, adjusting it so that the indicator only blinks when you speak, or make a noise with your rattle.</p>
+      <form>
+        <label for="bd-threshold-slider">Detection sensitivity</label>
+        <div id="threshold-setup-wrapper">
+          <div>Most sensitive</div>
+          <input type="range" min="0" max="0.3" value="0.01" step="0.001" id="bd-threshold-slider" name="bd-threshold-slider" />
+          <div>Least sensitive</div>
+        </div>
+      </form>
+      <p><button id="audio-init-ready">I'm ready ✔</button></p>
+    </section>
   </main>
 </body>
 </html>

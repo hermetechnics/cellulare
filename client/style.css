@@ -1,5 +1,7 @@
 html {
   background: black;
+  font-size: 17px;
+  text-shadow: 0 0 6px black;
 }
 
 html, body {
@@ -33,4 +35,29 @@ button {
 
 #grid {
   font-size: 1.618em;
+}
+
+label {
+  font-weight: bold;
+}
+
+p {
+  line-height: 1.5;
+}
+
+#threshold-indicator {
+  background: transparent;
+  height: 2rem;
+  width: 2rem;
+  border: solid 2px red;
+  border-radius: 100%;
+}
+
+#threshold-setup-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+#threshold-setup-wrapper > * + * {
+  margin-left: 1rem;
 }
