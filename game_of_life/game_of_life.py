@@ -20,6 +20,13 @@ class GameOfLife:
     def grid_init(self):
         return np.random.choice(a=[ON, OFF], size=(self.grid_size, self.grid_size), p=[self.density, 1-self.density])
 
+    def get_grid_with_entities(self, spirits):
+        grid_with_spirits = self.grid.copy()
+        for spirit in spirits:
+            grid_with_spirits[spirit.coordinate_x][spirit.coordinate_y] = 2
+
+        return grid_with_spirits
+
     def tick(self):
         new_grid = self.grid.copy()
         for i in range(self.grid_size):
