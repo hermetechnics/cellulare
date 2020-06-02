@@ -1,6 +1,10 @@
 const grid = document.getElementById('grid');
 
-const toEmoji = char => parseInt(char) ? '⬜' : '⬛';
+const toEmoji = char => {
+  if (parseInt(char) == '2') return '🌱';
+  if (parseInt(char) == '1') return  '⬜';
+  else return '⬛';
+}
 
 const startApp = () => {
   const socket = io();
@@ -22,10 +26,10 @@ const startApp = () => {
   // this is how we can subscribe to various events from the server, and respond to them
   socket.on('grid', ({ grid: gridData, count }) => {
     grid.innerText = `
-Count: ${count}
-${gridData.map(row => row.map(toEmoji).join(' ')).join('\n')}
-    `;
-  });
+    Count: ${count}
+    ${gridData.map(row => row.map(toEmoji).join(' ')).join('\n')}
+        `;
+      });
 };
 
 startApp();

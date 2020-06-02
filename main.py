@@ -22,7 +22,11 @@ spirits = []
 
 """
 TODO: save the history of the grid for playback
-TODO: send information back to specific client
+TODO: do not register debug as "spirit"
+
+IDEAS: 
+- slightly swing speed by the temperature on the grid (how many activated points)
+- 'resonance' between two entities firing in the same time 
 """
 
 
@@ -35,19 +39,14 @@ async def background_task():
         await sio.sleep(1)
         count += 1
         game_of_life.tick()
-        await sio.emit("grid", { 'grid': game_of_life.grid.tolist(), 'count': count })
+        await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(), 'count': count })
 
         for spirit in spirits:
-            await sio.emit("test", to=spirit.client_id)
-            # TODO: this doesn't work yet
+            await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit))}, room=spirit.client_id)
 
 @sio.event
 async def test_event(sid, message):
     print('received test_event from the client', message)
-
-@sio.event
-async def disconnect_request(sid):
-    await sio.disconnect(sid)
 
 @sio.event
 async def connect(sid, environ):
@@ -57,6 +56,9 @@ async def connect(sid, environ):
 
 @sio.event
 def disconnect(sid):
+    global spirits
+    new_spirits = [s for s in spirits if s.client_id != sid]
+    spirits = new_spirits
     print('Client disconnected')
 
 def main():

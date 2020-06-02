@@ -1,6 +1,6 @@
 from random import randrange
 
-from game_of_life.game_of_life import SPIRIT
+from game_of_life.game_of_life import SPIRIT, OFF, ON
 
 
 class Cell:
@@ -14,3 +14,9 @@ class Cell:
 
     def register_to_grid(self):
         self.game.grid[self.coordinate_x][self.coordinate_y] = SPIRIT
+
+    def activate(self, activity):
+        if self.game.grid[self.coordinate_x][self.coordinate_y] == OFF:
+            self.game.grid[self.coordinate_x][self.coordinate_y] = ON
+        else:
+            self.game.activate_neighbours(self.coordinate_x, self.coordinate_y)
