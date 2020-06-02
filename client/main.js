@@ -5,29 +5,30 @@ import { startAnimating } from './network.js';
 const testEventButton = document.getElementById('test-event');
 const startAudioButton = document.getElementById('start-audio');
 
-const startAudio = async () => {
-  const { loadSamples, playSample, setMasterGain } = createAudioEngine();
-  console.info('Started audio engine');
-
-  const { kick, snare, hihat } = await loadSamples(samples);
-  console.info('Samples loaded');
-
-  playSample(kick);     // immediately
-  playSample(hihat, 2); // 2 seconds later
-
-  await playSample(snare, 3); // 3 seconds later, and wait for it to end
-  playSample(snare, 2); // 2 seconds after the sample above stops playing
-  playSample(snare, 4); // 4 seconds later
-
-  // the order in which we schedule audio events doesn't matter
-  // the gain change below will happen before the snare playback above
-  setMasterGain(0.15, 3) // 3 seconds later
-};
-
 /**
  * Initialises the app
  */
 const startApp = () => {
+  let audioEngine, loadedSamples;
+
+  // THIS IS WHERE WE INITIALISE AUDIO
+  startAudioButton.addEventListener('click', async () => {
+    audioEngine = createAudioEngine();
+    loadedSamples = await loadSamples(samples);
+    console.info('Samples loaded');
+
+    audioEngine.playSample(loadedSamples.kick);     // immediately
+    audioEngine.playSample(loadedSamples.hihat, 2); // 2 seconds later
+
+    await audioEngine.playSample(loadedSamples.snare, 3); // 3 seconds later, and wait for it to end
+    audioEngine.playSample(loadedSamples.snare, 2); // 2 seconds after the sample above stops playing
+    audioEngine.playSample(loadedSamples.snare, 4); // 4 seconds later
+
+    // the order in which we schedule audio events doesn't matter
+    // the gain change below will happen before the snare playback above
+    audioEngine.setMasterGain(0.15, 3) // 3 seconds later
+  });
+
   const socket = io();
   // some basic connection event handlers
   // TODO: provide feedback to the user when they trigger
@@ -56,7 +57,7 @@ const startApp = () => {
     socket.emit('test_event', { testData: 'test' });
   });
 
-  startAudioButton.addEventListener('click', startAudio);
+
   startAnimating();
 };
 
