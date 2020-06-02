@@ -38,7 +38,8 @@ async def background_task():
         await sio.emit("grid", { 'grid': game_of_life.grid.tolist(), 'count': count })
 
         for spirit in spirits:
-            await sio.emit("test", to=spirit.client_id)
+            # await sio.emit("test", to=spirit.client_id)
+            await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_cell(spirit))})
             # TODO: this doesn't work yet
 
 @sio.event

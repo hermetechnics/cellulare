@@ -4,13 +4,21 @@ ON = 1
 SPIRIT = 1
 OFF = 0
 
+# how many ticks of frozen screen before the grid restarts
+FROZEN_LIMIT = 5
+
 
 class GameOfLife:
     def __init__(self, grid_size=10):
         self.grid_size = grid_size
-        self.density = 0.3
-        self.grid = np.random.choice(a=[ON, OFF], size=(grid_size, grid_size), p=[self.density, 1-self.density])
+        self.density = 0.1
+        self.empty_ticks = 0
+
+        self.grid = self.grid_init()
         print("initial state: \n", self.grid)
+
+    def grid_init(self):
+        return np.random.choice(a=[ON, OFF], size=(self.grid_size, self.grid_size), p=[self.density, 1-self.density])
 
     def tick(self):
         new_grid = self.grid.copy()
@@ -19,6 +27,14 @@ class GameOfLife:
 
                 total = self.calculate_neighbours(i, j)
                 new_grid[i,j] = self.apply_rule(self.grid[i, j], total)
+
+        if np.count_nonzero(np.subtract(self.grid, new_grid)) == 0:
+            self.empty_ticks += 1
+            print("FROZEN will restart in {}".format(FROZEN_LIMIT - self.empty_ticks))
+            if FROZEN_LIMIT - self.empty_ticks:
+                new_grid = self.grid_init()
+        else:
+            self.empty_ticks = 0
 
         self.grid = new_grid
 
@@ -43,3 +59,5 @@ class GameOfLife:
                     self.grid[(i + 1) % self.grid_size, (j - 1) % self.grid_size] + self.grid[
                         (i + 1) % self.grid_size, (j + 1) % self.grid_size]))
 
+    def get_cell(self, spirit):
+        return self.grid[spirit.coordinate_x][spirit.coordinate_y]
