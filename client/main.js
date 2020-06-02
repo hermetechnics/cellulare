@@ -1,7 +1,7 @@
 import { samples, beatDetection, playbackConfig } from './config.js';
 import { throttle, range, randomSwing, chooseRandomlyFrom } from './util.js';
 import { createAudioEngine } from './audio.js';
-import { startAnimating } from './network.js';
+import { startAnimating, setGlowiness } from './network.js';
 
 const startAudioButton = document.getElementById('start-audio');
 const introSection = document.getElementById('intro-section');
@@ -38,6 +38,9 @@ const initAudioEngine = context => new Promise((nextStep) => {
         { backgroundColor: '#FF0000FF', offset: 0.05 },
         { backgroundColor: '#FF000000', offset: 1 },
       ], { duration: 2000, easing: 'ease-out' });
+
+    // set the visualisation glowiness
+    setGlowiness(rms * 200);
   };
 
   // THIS IS WHERE WE INITIALISE AUDIO

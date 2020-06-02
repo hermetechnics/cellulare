@@ -29,6 +29,7 @@ precision mediump float;
 uniform vec2 resolution;
 uniform vec2 mouse;
 uniform float time;
+uniform float glowiness;
 
 float N21(vec2 p) {
 	vec3 a = fract(vec3(p.xyx) * vec3(213.897, 653.453, 253.098));
@@ -135,7 +136,7 @@ void main()
     }
 
 
-  float glow = -uv.y*1.*2.;
+  float glow = 0.1 * glowiness;
 
   vec3 baseCol = vec3(s, cos(t*.4), -sin(t*.24))*.4+.6;
   vec3 col = baseCol*m;
@@ -152,6 +153,7 @@ void main()
   col *= S(0., 20., t)*S(224., 200., t);
   #endif
 
+  col *= 1. / length(vec2(0., 0.) - uv) * 3. - 4.;
   gl_FragColor = vec4(col,1);
 }`;
 
@@ -170,8 +172,9 @@ const dampened = speed => {
 };
 
 const dampeningFactor = 0.08;
-let MouseX = dampened(dampeningFactor);
-let MouseY = dampened(dampeningFactor);
+const MouseX = dampened(dampeningFactor);
+const MouseY = dampened(dampeningFactor);
+const Glowiness = dampened(dampeningFactor);
 
 const onWindowResize = () => {
   canvas.width = window.innerWidth;
@@ -192,8 +195,11 @@ const animate = time => {
 
   MouseX.update();
   MouseY.update();
+  Glowiness.update();
 
-  draw(time, MouseX.getValue(), MouseY.getValue(), canvas.width, canvas.height);
+  draw(time, MouseX.getValue(), MouseY.getValue(), canvas.width, canvas.height, Glowiness.getValue());
 }
 
 export const startAnimating = () => requestAnimationFrame(animate);
+
+export const setGlowiness = target => Glowiness.setTarget(target);
