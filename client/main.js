@@ -1,5 +1,5 @@
 import { samples, beatDetection } from './config.js';
-import { throttle } from './util.js';
+import { throttle, randomSwing } from './util.js';
 import { createAudioEngine } from './audio.js';
 import { startAnimating } from './network.js';
 
@@ -10,45 +10,8 @@ const audioReadyButton = document.getElementById('audio-init-ready');
 const thresholdIndicator = document.getElementById('threshold-indicator');
 const thresholdSlider = document.getElementById('bd-threshold-slider');
 
-/**
- * Initialises the app
- */
-const startApp = () => {
+const initSocket = async context => {
   const socket = io();
-
-  let audioEngine, loadedSamples;
-
-  // THIS IS WHAT TRIGGERS WHEN BEAT IS DETECTED
-  const onBeatDetect = rms => {
-    thresholdIndicator.animate([
-        { backgroundColor: '#FF000000', offset: 0 },
-        { backgroundColor: '#FF0000FF', offset: 0.05 },
-        { backgroundColor: '#FF000000', offset: 1 },
-      ], { duration: 2000, easing: 'ease-out' });
-  };
-
-  // THIS IS WHERE WE INITIALISE AUDIO
-  startAudioButton.addEventListener('click', async () => {
-    audioEngine = await createAudioEngine({ onBeatDetect });
-    console.info('Engine created');
-
-    thresholdSlider.addEventListener('change', throttle(() => {
-      console.log(`setting threshold to ${parseFloat(thresholdSlider.value)}`);
-      audioEngine.setBeatDetectionThreshold(parseFloat(thresholdSlider.value));
-    }, beatDetection.THROTTLE_DURATION));
-
-    loadedSamples = await audioEngine.loadSamples(samples);
-    console.info('Samples loaded');
-
-    introSection.hidden = true;
-    audioSetupSection.hidden = false;
-  });
-
-  audioReadyButton.addEventListener('click', () => {
-    audioSetupSection.hidden = true;
-    startAnimating();
-  });
-
   // some basic connection event handlers
   // TODO: provide feedback to the user when they trigger
   socket.on('connect', () => {
@@ -63,6 +26,57 @@ const startApp = () => {
       console.warn('Disconnected by client');
     }
   });
+
+  return { ...context, socket };
+};
+
+const initAudioEngine = context => new Promise((nextStep) => {
+  // THIS IS WHAT TRIGGERS WHEN BEAT IS DETECTED
+  const onBeatDetect = rms => {
+    thresholdIndicator.animate([
+        { backgroundColor: '#FF000000', offset: 0 },
+        { backgroundColor: '#FF0000FF', offset: 0.05 },
+        { backgroundColor: '#FF000000', offset: 1 },
+      ], { duration: 2000, easing: 'ease-out' });
+  };
+
+  // THIS IS WHERE WE INITIALISE AUDIO
+  startAudioButton.addEventListener('click', async () => {
+    const audioEngine = await createAudioEngine({ onBeatDetect });
+    console.info('Engine created');
+
+    const loadedSamples = await audioEngine.loadSamples(samples);
+    console.info('Samples loaded');
+
+    introSection.hidden = true;
+    audioSetupSection.hidden = false;
+
+    nextStep({ ...context, audioEngine, loadedSamples });
+  });
+});
+
+const initAudioSetup = context => new Promise((nextStep) => {
+  const { audioEngine } = context;
+
+  thresholdSlider.addEventListener('change', throttle(() => {
+    console.log(`setting threshold to ${parseFloat(thresholdSlider.value)}`);
+    audioEngine.setBeatDetectionThreshold(parseFloat(thresholdSlider.value));
+  }, beatDetection.THROTTLE_DURATION));
+
+  audioReadyButton.addEventListener('click', () => {
+    audioSetupSection.hidden = true;
+    startAnimating();
+    nextStep(context);
+  });
+});
+
+const initPulse = async context => {
+  const { socket, audioEngine, loadedSamples } = context;
+
+  const randomKick = () => {
+    let kicks = [loadedSamples.kick1, loadedSamples.kick2, loadedSamples.kick3, loadedSamples.kick4];
+    return kicks[Math.floor(Math.random() * 4)]
+  }
 
   // this is how we can subscribe to various events from the server, and respond to them
   socket.on('pulse', data => {
@@ -84,23 +98,25 @@ const startApp = () => {
     }
   });
 
-  // adding more human feel to the drumming
-  function randomSwing () {
-    return (Math.random() - 0.5) / 70;
-  }
-
-  function randomKick () {
-    let kicks = [loadedSamples.kick1, loadedSamples.kick2, loadedSamples.kick3, loadedSamples.kick4];
-    return kicks[Math.floor(Math.random() * 4)]
-  }
-
-  testEventButton.addEventListener('click', () => {
-    // if the button is clicked, we send a test event to the server
-    socket.emit('test_event', { testData: 'test' });
-  });
-
-
-  startAnimating();
+  return context;
 };
 
-startApp();
+const init = async steps => {
+  let context;
+
+  for (const step of steps) {
+    context = await step(context);
+  }
+
+  console.info('Init sequence complete');
+};
+
+/**
+ * Initialises the app
+ */
+init([
+  initSocket,
+  initAudioEngine,
+  initAudioSetup,
+  initPulse,
+]);
