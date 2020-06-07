@@ -1,4 +1,3 @@
-import json
 import os
 
 import numpy as np
@@ -19,7 +18,7 @@ sio = socketio.AsyncServer(async_mode='tornado')
 
 game_of_life = None
 spirits = []
-
+server_count = 0
 
 """
 TODO: save the history of the grid for playback
@@ -42,12 +41,14 @@ async def background_task():
     """Example of how to send server generated events to clients.
     use `sio.start_background_task to` start the task
     """
-    count = 0
+    global server_count
     while True:
         await sio.sleep(1)
-        count += 1
+        server_count += 1
         game_of_life.tick()
-        await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(), 'count': count })
+        await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(),
+                                 'count': server_count,
+                                 'density': game_of_life.density })
 
         for spirit in spirits:
             await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
@@ -59,8 +60,13 @@ async def test_event(sid, message):
 
 @sio.on('reset_game')
 def reset_game(sid, data):
+    global server_count
+    server_count = 0
+
     print("resetting game!")
+    game_of_life.density = float(data["density"])
     game_of_life.reset_game()
+
 
 @sio.on('trigger_activity')
 def trigger_activity(sid, data):
