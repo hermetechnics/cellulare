@@ -2,6 +2,7 @@ import { samples, beatDetection, playbackConfig } from './config.js';
 import { throttle, range, randomSwing, chooseRandomlyFrom, toggleFullscreen } from './util.js';
 import { createAudioEngine } from './audio.js';
 import { startAnimating, setGlowiness } from './network.js';
+import { produceInfinitely, repeat } from './sequencing.js';
 
 const startAudioButton = document.getElementById('start-audio');
 const introSection = document.getElementById('intro-section');
@@ -80,12 +81,8 @@ const initPulse = async context => {
   // this is how we can subscribe to various events from the server, and respond to them
   socket.on('pulse', data => {
     console.info('pulse', data);
-
-    for (const i of range(0, playbackConfig.STEPS_PER_SECOND)) {
-      const sample = chooseRandomlyFrom(kicks);
-      audioEngine.playSample(sample, i * (1 / playbackConfig.STEPS_PER_SECOND) + randomSwing());
-    }
-
+    // TODO: here we should just push the data into an array (like a queue)
+    // and schedule the events with better timing in the sequencing part below
     if(parseInt(data.my_cell) == 1){
       audioEngine.playSample(loadedSamples.rattle, 0 + randomSwing());
     }
@@ -96,6 +93,34 @@ const initPulse = async context => {
       }
     }
   });
+
+  const playBeat = index => {
+    const time = index * (1 / playbackConfig.STEPS_PER_SECOND);
+    audioEngine.playSample(chooseRandomlyFrom(kicks), time + randomSwing());
+  };
+
+  let lastScheduledTime = 0;
+
+  const SEQUENCER_TICK = 1;
+  const sequence = repeat(
+    () => {
+      let currentScheduledTime = lastScheduledTime;
+
+      for (const _ of produceInfinitely(playBeat)) {
+        currentScheduledTime += 1 / playbackConfig.STEPS_PER_SECOND;
+        if (currentScheduledTime > lastScheduledTime + SEQUENCER_TICK) {
+          lastScheduledTime = currentScheduledTime;
+          break;
+        }
+      }
+
+      // Here we can schedule other stuff coming from the pulse above
+      // ...
+    },
+    SEQUENCER_TICK,
+  );
+
+  sequence.start();
 
   return context;
 };

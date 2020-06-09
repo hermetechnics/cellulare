@@ -73,5 +73,8 @@ export const createAudioEngine = async ({ onBeatDetect }) => {
     playSample: playSample(audioContext, compressor),
     setMasterGain: setGain(audioContext, master),
     setBeatDetectionThreshold: detector.setThreshold,
+    get currentTime() {
+      return audioContext.currentTime;
+    },
   };
 };
