@@ -22,13 +22,16 @@ const loadSamples = audioContext => async (samples = {}) => {
   return loaded;
 };
 
-const playSample = (audioContext, outputNode) => ({ buffer }, time = 0, pan = 0) => {
+const playSample = (audioContext, outputNode) => (sample, time = 0, pan = 0, gain = 1) => {
+  const { buffer, name } = sample;
   const source = new AudioBufferSourceNode(audioContext, { buffer });
+  const bus = new GainNode(audioContext, { gain });
   const panner = new StereoPannerNode(audioContext, { pan });
 
   source
-    .connect(panner)
-    .connect(outputNode);
+      .connect(panner)
+      .connect(bus)
+      .connect(outputNode);
   source.start(audioContext.currentTime + time);
 
   return new Promise((resolve) => source.addEventListener('ended', () => {

@@ -42,6 +42,8 @@ const initAudioEngine = context => new Promise((nextStep) => {
 
     // set the visualisation glowiness
     setGlowiness(rms * 200);
+
+    context.socket.emit('trigger_activity', rms);
   };
 
   // THIS IS WHERE WE INITIALISE AUDIO
@@ -77,21 +79,30 @@ const initAudioSetup = context => new Promise((nextStep) => {
 const initPulse = async context => {
   const { socket, audioEngine, loadedSamples } = context;
   const kicks = [loadedSamples.kick1, loadedSamples.kick2, loadedSamples.kick3, loadedSamples.kick4];
+  const rattles = [loadedSamples.rattle1, loadedSamples.rattle2, loadedSamples.rattle3];
 
+  let scheduledRattles = [];
   // this is how we can subscribe to various events from the server, and respond to them
   socket.on('pulse', data => {
     console.info('pulse', data);
+    scheduledRattles = [];
+    const neighbours = JSON.parse(data.neighbours);
+
     // TODO: here we should just push the data into an array (like a queue)
     // and schedule the events with better timing in the sequencing part below
     if(parseInt(data.my_cell) == 1){
-      audioEngine.playSample(loadedSamples.rattle, 0 + randomSwing());
+      scheduledRattles.push(() => audioEngine.playSample(chooseRandomlyFrom(rattles), 0 + randomSwing()));
     }
 
-    for (let i = 0; i < data.neighbours.length; i++) {
-      if(parseInt(data.neighbours[i]) == 1){
-        audioEngine.playSample(loadedSamples.rattle_distant, 0.25 + i * (0.0625))
-      }
+    for (let i = 0; i < neighbours.length; i++) {
+       if(parseInt(neighbours[i]) == 1){
+      scheduledRattles.push(() => audioEngine.playSample(loadedSamples.rattle_aux,
+          1 / playbackConfig.STEPS_PER_SECOND + i * (1 / 12),
+          Math.sin(i / 8),0.15));
+       }
     }
+    console.log(scheduledRattles.length);
+    console.log(neighbours.length);
   });
 
   const playBeat = index => {
@@ -113,6 +124,11 @@ const initPulse = async context => {
           break;
         }
       }
+
+      for (const trigger of scheduledRattles) {
+        trigger();
+      }
+      scheduledRattles = [];
 
       // Here we can schedule other stuff coming from the pulse above
       // ...
