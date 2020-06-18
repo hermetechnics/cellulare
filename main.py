@@ -78,10 +78,14 @@ def trigger_activity(sid, data):
     if spirit:
         spirit.activate(activity)
 
-@sio.event
-async def connect(sid, environ):
+@sio.on('register_cell')
+def trigger_activity(sid):
+    print('new cell')
     new_cell = Cell(game=game_of_life, client_id=sid)
     spirits.append(new_cell)
+
+@sio.event
+async def connect(sid, environ):
     print('Client connected', sid)
 
 @sio.event

@@ -17,6 +17,7 @@ const initSocket = async context => {
   // TODO: provide feedback to the user when they trigger
   socket.on('connect', () => {
     console.info('Connected to WebSocket');
+    socket.emit('register_cell');
   });
 
   socket.on('disconnect', (reason) => {
@@ -43,7 +44,9 @@ const initAudioEngine = context => new Promise((nextStep) => {
     // set the visualisation glowiness
     setGlowiness(rms * 200);
 
-    context.socket.emit('trigger_activity', rms);
+    if (context.pulse) {
+      context.socket.emit('trigger_activity', rms);
+    }
   };
 
   // THIS IS WHERE WE INITIALISE AUDIO
@@ -138,7 +141,7 @@ const initPulse = async context => {
 
   sequence.start();
 
-  return context;
+  return { ...context, pulse: true };
 };
 
 const initExperimentInterface = async context => {
