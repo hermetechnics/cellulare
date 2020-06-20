@@ -25,14 +25,12 @@ class BeatDetector extends AudioWorkletProcessor {
 
   process ([[signal]], _, parameters) {
     if (!signal) return true;
-
-
     const rmsValue = rms(signal);
     const [threshold] = parameters.threshold;
 
     if (rmsValue > threshold) {
       if (!this.beatDetected) {
-        this.port.postMessage('beat-detected', { rms: rmsValue });
+        this.port.postMessage({ rms: rmsValue });
       }
       this.beatDetected = true;
     } else {

@@ -6,9 +6,9 @@ export const createBeatDetector = async (audioContext, callback) => {
   const thresholdParam = processor.parameters.get('threshold');
   const setThreshold = (threshold) => thresholdParam.setValueAtTime(threshold, audioContext.currentTime);
 
-  processor.port.addEventListener('message', ({ data }) => {
+  processor.port.onmessage = ({ data }) => {
     callback(data.rms);
-  });
+  };
 
   return { processor, setThreshold };
 };

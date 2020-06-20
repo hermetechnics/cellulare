@@ -16,8 +16,9 @@ vec3 hsv2rgb(vec3 c)
 void main(void){
     vec3 destColor = vec3(0.1, 0.5, 0.3);
     vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-    float l = 0.05 / abs(length(p) - 0.5);
-    gl_FragColor = vec4(l*destColor*glowiness, 1.0);
+    float gradual_onset = min(time, 5.0) / 5.0;
+    float l = 0.05 / abs(length(p) - 0.5) * glowiness * gradual_onset;
+    gl_FragColor = vec4(l*destColor, 1.0);
 }`;
 
 const { canvas, draw } = createRenderer(shader);
@@ -67,6 +68,14 @@ const animate = time => {
 
 export const startAnimating = () => {
   animationStartTime = performance.now();
+
+  canvas.animate([
+    { opacity: 0 },
+    { opacity: 1 },
+  ], {
+    fill: 'forwards',
+    duration: 6000,
+  });
   requestAnimationFrame(animate);
 };
 
