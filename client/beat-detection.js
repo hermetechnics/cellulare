@@ -1,43 +1,14 @@
-import { beatDetection } from './config.js';
+export const createBeatDetector = async (audioContext, callback) => {
+  await audioContext.audioWorklet.addModule('./beat-detector.worklet.js');
+  console.info('Registered beat detector');
 
-const rms = signal => {
-  let sum = 0;
-  for (let i = 0; i < signal.length; i++) {
-    sum += signal[i] ** 2;
-  }
+  const processor = new AudioWorkletNode(audioContext, 'beat-detector');
+  const thresholdParam = processor.parameters.get('threshold');
+  const setThreshold = (threshold) => thresholdParam.setValueAtTime(threshold, audioContext.currentTime);
 
-  return Math.sqrt(sum / signal.length);
-};
-
-const createProcessorLogic = callback => {
-  const detectorState = {
-    beatDetected: false,
-    threshold: beatDetection.DEFAULT_THRESHOLD,
-  };
-
-  const processorHandler = ({ inputBuffer }) => {
-    const rmsValue = rms(inputBuffer.getChannelData(0));
-    if (rmsValue > detectorState.threshold) {
-      if (!detectorState.beatDetected) callback(rmsValue);
-      detectorState.beatDetected = true;
-    } else {
-      detectorState.beatDetected = false;
-    }
-  };
-
-  return {
-    processorHandler,
-    setThreshold: threshold => detectorState.threshold = threshold,
-  };
-};
-
-export const createBeatDetector = (audioContext, callback) => {
-  const processor = audioContext.createScriptProcessor(beatDetection.BUFFER_SIZE, 1);
-  const { processorHandler, setThreshold } = createProcessorLogic((rmsValue) => {
-    if (typeof callback === 'function') callback(rmsValue);
+  processor.port.addEventListener('message', ({ data }) => {
+    callback(data.rms);
   });
-
-  processor.onaudioprocess = processorHandler;
 
   return { processor, setThreshold };
 };

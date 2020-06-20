@@ -42,6 +42,7 @@ async def background_task():
     use `sio.start_background_task to` start the task
     """
     global server_count
+    global spirits
     while True:
         await sio.sleep(1)
         server_count += 1
@@ -50,9 +51,12 @@ async def background_task():
                                  'count': server_count,
                                  'density': game_of_life.density })
 
+        spirit_factor = game_of_life.get_spirit_factor(spirits)
+        print(spirit_factor)
         for spirit in spirits:
             await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
-                                      'neighbours': "{}".format(game_of_life.get_neighbours(spirit))}, room=spirit.client_id)
+                                      'neighbours': "{}".format(game_of_life.get_neighbours(spirit)),
+                                      'spirit_factor': "{}".format(spirit_factor)}, room=spirit.client_id)
 
 @sio.event
 async def test_event(sid, message):

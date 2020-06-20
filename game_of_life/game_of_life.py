@@ -64,6 +64,11 @@ class GameOfLife:
                 return ON
         return current_cell
 
+    def get_spirit_factor(self, spirits):
+        if len(spirits) == 0:
+            return 0.0
+        return len([1 for spirit in spirits if self.grid[spirit.coordinate_x][spirit.coordinate_y]]) * 1.0 / len(spirits)
+
     def get_neighbour_coordinates_pairs(self, coordinate_x, coordinate_y):
         """anti-clockwise"""
         return [((coordinate_x - 1), (coordinate_y - 1)),

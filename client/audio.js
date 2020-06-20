@@ -22,9 +22,17 @@ const loadSamples = audioContext => async (samples = {}) => {
   return loaded;
 };
 
-const playSample = (audioContext, outputNode) => (sample, time = 0, pan = 0, gain = 1) => {
-  const { buffer, name } = sample;
-  const source = new AudioBufferSourceNode(audioContext, { buffer });
+const createTapeEcho = audioContext => {
+  const gain = new GainNode(audioContext, { gain: 0.4 });
+  const delay = new DelayNode(audioContext, { delayTime: 0.025 });
+  delay.connect(gain).connect(delay);
+
+  return delay;
+}
+
+const playSample = (audioContext, outputNode) => (sample, time = 0, pan = 0, gain = 1, playbackRate = 1) => {
+  const { buffer } = sample;
+  const source = new AudioBufferSourceNode(audioContext, { buffer, playbackRate });
   const bus = new GainNode(audioContext, { gain });
   const panner = new StereoPannerNode(audioContext, { pan });
 
@@ -62,18 +70,23 @@ export const createAudioEngine = async ({ onBeatDetect }) => {
   // this node provides the master volume control
   const master = new GainNode(audioContext, { gain: 1 });
   const compressor = new DynamicsCompressorNode(audioContext);
+  const echo = createTapeEcho(audioContext);
 
-  compressor
+  echo
+    .connect(compressor)
     .connect(master)
     .connect(audioContext.destination);
 
-  const detector = createBeatDetector(audioContext, onBeatDetect);
+  const detector = await createBeatDetector(audioContext, onBeatDetect);
   const microphone = await getMicrophoneInput(audioContext);
-  microphone.connect(detector.processor);
+  microphone
+    .connect(detector.processor)
+    .connect(new GainNode(audioContext, { gain: 0 })) // this makes the processor work in Chrome
+    .connect(audioContext.destination);
 
   return {
     loadSamples: loadSamples(audioContext),
-    playSample: playSample(audioContext, compressor),
+    playSample: playSample(audioContext, echo),
     setMasterGain: setGain(audioContext, master),
     setBeatDetectionThreshold: detector.setThreshold,
     get currentTime() {

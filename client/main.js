@@ -51,7 +51,7 @@ const initAudioEngine = context => new Promise((nextStep) => {
 
   // THIS IS WHERE WE INITIALISE AUDIO
   startAudioButton.addEventListener('click', async () => {
-    const audioEngine = await createAudioEngine({ onBeatDetect });
+    const audioEngine = await createAudioEngine({ onBeatDetect: throttle(onBeatDetect, 1000) });
     console.info('Engine created');
 
     const loadedSamples = await audioEngine.loadSamples(samples);
@@ -91,21 +91,24 @@ const initPulse = async context => {
     scheduledRattles = [];
     const neighbours = JSON.parse(data.neighbours);
 
-    // TODO: here we should just push the data into an array (like a queue)
-    // and schedule the events with better timing in the sequencing part below
-    if(parseInt(data.my_cell) == 1){
-      scheduledRattles.push(() => audioEngine.playSample(chooseRandomlyFrom(rattles), 0 + randomSwing()));
+    // atmo
+    const backgroundGain = parseFloat(data.spirit_factor) * 0.2;
+    for (let i = 0; i < 4; i++) {
+      scheduledRattles.push(() => audioEngine.playSample(loadedSamples.rattle_aux, 0 + i / 4, 0, backgroundGain, Math.random() * 0.2 + 0.1));
     }
 
+    // own cell
+    if(parseInt(data.my_cell) == 1){
+      scheduledRattles.push(() => audioEngine.playSample(chooseRandomlyFrom(rattles), 0 + randomSwing(), 0, 0.4, Math.random() * 0.3 + 0.2));
+    }
+    // neighbours
     for (let i = 0; i < neighbours.length; i++) {
        if(parseInt(neighbours[i]) == 1){
       scheduledRattles.push(() => audioEngine.playSample(loadedSamples.rattle_aux,
-          1 / playbackConfig.STEPS_PER_SECOND + i * (1 / 12),
-          Math.sin(i / 8),0.15));
+          1 / playbackConfig.STEPS_PER_SECOND + i * (1 / 6),
+          Math.sin(i / 8), 0.05, Math.random() * 0.1 + 0.05));
        }
     }
-    console.log(scheduledRattles.length);
-    console.log(neighbours.length);
   });
 
   const playBeat = index => {
