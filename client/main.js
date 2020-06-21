@@ -119,7 +119,7 @@ const initPulse = async context => {
   let lastScheduledTime = 0;
 
   const SEQUENCER_TICK = 1;
-  const sequence = repeat(
+  const mainRhythm = repeat(
     () => {
       let currentScheduledTime = lastScheduledTime;
 
@@ -142,7 +142,38 @@ const initPulse = async context => {
     SEQUENCER_TICK,
   );
 
-  sequence.start();
+  // sequence.start();
+
+  window.callBack = () => {
+    console.log("call back");
+    mainRhythm.stop();
+
+    const callbackLength = 13;
+    const rollPeriod = 0.8;
+    const numRolls = 300;
+
+    for (const callback of range(0, 4)) {
+      for (const i of range(0, 7)) {
+        playBeat(i + callback * callbackLength);
+      }
+    }
+
+    for (const roll of range(0, numRolls)) {
+      playBeat(4 * callbackLength + roll * rollPeriod);
+    }
+
+    for (const callback of range(0, 4)) {
+      for (const i of range(0, 7)) {
+        playBeat(3 + numRolls * rollPeriod + i + callback * callbackLength + 4 * callbackLength);
+      }
+    }
+  }
+
+  socket.on('call_back_drumming', callBack);
+
+  socket.on('resume_drumming', data => {
+    mainRhythm.start();
+  });
 
   return { ...context, pulse: true };
 };
