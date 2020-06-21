@@ -7,7 +7,7 @@ import tornado.web
 from tornado.options import define, options, parse_command_line
 
 from game_of_life.cell import Cell
-from game_of_life.game_of_life import GameOfLife
+from game_of_life.game_of_life import GameOfLife, ALGORITHM_FULL
 
 np.random.seed(42)
 
@@ -15,6 +15,8 @@ define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=False, help="run in debug mode")
 
 sio = socketio.AsyncServer(async_mode='tornado')
+
+paused = False
 
 game_of_life = None
 spirits = []
@@ -45,18 +47,19 @@ async def background_task():
     global spirits
     while True:
         await sio.sleep(1)
-        server_count += 1
-        game_of_life.tick()
-        await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(),
-                                 'count': server_count,
-                                 'density': game_of_life.density })
+        if not paused:
+            server_count += 1
+            game_of_life.tick()
+            await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(),
+                                     'count': server_count,
+                                     'density': game_of_life.density,
+                                     'algorithm': game_of_life.algorithm})
 
-        spirit_factor = game_of_life.get_spirit_factor(spirits)
-        print(spirit_factor)
-        for spirit in spirits:
-            await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
-                                      'neighbours': "{}".format(game_of_life.get_neighbours(spirit)),
-                                      'spirit_factor': "{}".format(spirit_factor)}, room=spirit.client_id)
+            spirit_factor = game_of_life.get_spirit_factor(spirits)
+            for spirit in spirits:
+                await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
+                                          'neighbours': "{}".format(game_of_life.get_neighbours(spirit)),
+                                          'spirit_factor': "{}".format(spirit_factor)}, room=spirit.client_id)
 
 @sio.event
 async def test_event(sid, message):
@@ -69,18 +72,24 @@ def reset_game(sid, data):
 
     print("resetting game!")
     game_of_life.density = float(data["density"])
+    game_of_life.algorithm = int(data["algorithm"])
     game_of_life.reset_game()
 
+@sio.on('pause')
+def reset_game(sid, data):
+    global paused
+    paused = not paused
+    print("paused: {}".format(paused))
 
 @sio.on('trigger_activity')
 def trigger_activity(sid, data):
     # TODO: if activity has some additional value than boolean parse here:
     activity = True
-
-    print("User triggered activity")
-    spirit = next((s for s in spirits if s.client_id == sid), None)
-    if spirit:
-        spirit.activate(activity)
+    if game_of_life.algorithm == ALGORITHM_FULL:
+        print("User triggered activity")
+        spirit = next((s for s in spirits if s.client_id == sid), None)
+        if spirit:
+            spirit.activate(activity)
 
 @sio.on('register_cell')
 def trigger_activity(sid):

@@ -9,12 +9,17 @@ OFF = 0
 # how many ticks of frozen screen before the grid restarts
 FROZEN_LIMIT = 5
 
+ALGORITHM_RANDOM = 0
+ALGORITHM_QUIET = 1
+ALGORITHM_FULL = 2
 
 class GameOfLife:
     def __init__(self, grid_size=10):
+        """if algorithm is set to random, it returns random values for all user outputs"""
         self.grid_size = grid_size
         self.density = 0.4
         self.empty_ticks = 0
+        self.algorithm = ALGORITHM_RANDOM
 
         self.grid = self.grid_init()
         print("initial state: \n", self.grid)
@@ -33,26 +38,30 @@ class GameOfLife:
         self.grid = self.grid_init()
 
     def tick(self):
-        new_grid = self.grid.copy()
-        for coordinate_x in range(self.grid_size):
-            for coordinate_y in range(self.grid_size):
+        if self.algorithm != ALGORITHM_RANDOM:
+            new_grid = self.grid.copy()
+            for coordinate_x in range(self.grid_size):
+                for coordinate_y in range(self.grid_size):
 
-                total = self.calculate_neighbours(coordinate_x, coordinate_y)
-                new_grid[coordinate_x,coordinate_y] = self.apply_rule(self.grid[coordinate_x, coordinate_y], total)
+                    total = self.calculate_neighbours(coordinate_x, coordinate_y)
+                    new_grid[coordinate_x,coordinate_y] = self.apply_rule(self.grid[coordinate_x, coordinate_y], total)
 
-        if np.count_nonzero(np.subtract(self.grid, new_grid)) == 0:
-            self.empty_ticks += 1
-            print("FROZEN will restart in {}".format(FROZEN_LIMIT - self.empty_ticks))
-            if FROZEN_LIMIT - self.empty_ticks:
-                new_grid = self.grid_init()
-        else:
-            self.empty_ticks = 0
+            if np.count_nonzero(np.subtract(self.grid, new_grid)) == 0:
+                self.empty_ticks += 1
+                print("FROZEN will restart in {}".format(FROZEN_LIMIT - self.empty_ticks))
+                if FROZEN_LIMIT - self.empty_ticks:
+                    new_grid = self.grid_init()
+            else:
+                self.empty_ticks = 0
 
-        self.grid = new_grid
+            self.grid = new_grid
 
     def get_neighbours(self, spirit):
-        coordinates = self.get_neighbour_coordinates_pairs(spirit.coordinate_x, spirit.coordinate_y)
-        return [self.get_grid_cell(coordinate[0], coordinate[1]) for coordinate in coordinates]
+        if self.algorithm == ALGORITHM_RANDOM:
+            return random.choice([ON, OFF], p=[self.density, 1-self.density])
+        else:
+            coordinates = self.get_neighbour_coordinates_pairs(spirit.coordinate_x, spirit.coordinate_y)
+            return [self.get_grid_cell(coordinate[0], coordinate[1]) for coordinate in coordinates]
 
 
     def apply_rule(self, current_cell, total):
@@ -67,7 +76,10 @@ class GameOfLife:
     def get_spirit_factor(self, spirits):
         if len(spirits) == 0:
             return 0.0
-        return len([1 for spirit in spirits if self.grid[spirit.coordinate_x][spirit.coordinate_y]]) * 1.0 / len(spirits)
+        if self.algorithm == ALGORITHM_RANDOM:
+            return random.choice([ON, OFF], p=[self.density, 1-self.density])
+        else:
+            return len([1 for spirit in spirits if self.grid[spirit.coordinate_x][spirit.coordinate_y]]) * 1.0 / len(spirits)
 
     def get_neighbour_coordinates_pairs(self, coordinate_x, coordinate_y):
         """anti-clockwise"""
@@ -101,7 +113,10 @@ class GameOfLife:
         return result
 
     def get_spirit_cell(self, spirit):
-        return self.get_grid_cell(spirit.coordinate_x, spirit.coordinate_y)
+        if self.algorithm == ALGORITHM_RANDOM:
+            return random.choice([ON, OFF], p=[self.density, 1-self.density])
+        else:
+            return self.get_grid_cell(spirit.coordinate_x, spirit.coordinate_y)
 
     def activate_neighbours(self, coordinate_x, coordinate_y):
         """when activity is triggered, we randomly set OFF values in the proximity to ON"""
