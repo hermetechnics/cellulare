@@ -6,6 +6,8 @@ ON = 1
 SPIRIT = 1
 OFF = 0
 
+GRID_SIZE = 42
+
 # how many ticks of frozen screen before the grid restarts
 FROZEN_LIMIT = 5
 
@@ -14,7 +16,7 @@ ALGORITHM_QUIET = 1
 ALGORITHM_FULL = 2
 
 class GameOfLife:
-    def __init__(self, grid_size=10):
+    def __init__(self, grid_size=GRID_SIZE):
         """if algorithm is set to random, it returns random values for all user outputs"""
         self.grid_size = grid_size
         self.density = 0.4
@@ -58,7 +60,7 @@ class GameOfLife:
 
     def get_neighbours(self, spirit):
         if self.algorithm == ALGORITHM_RANDOM:
-            return [np.random.choice(a=[ON, OFF], p=[self.density, 1-self.density]) for i in range(8)]
+            return [np.random.choice(a=[ON, OFF], p=[0.1, 0.9]) for i in range(8)]
         else:
             coordinates = self.get_neighbour_coordinates_pairs(spirit.coordinate_x, spirit.coordinate_y)
             return [self.get_grid_cell(coordinate[0], coordinate[1]) for coordinate in coordinates]
@@ -77,7 +79,7 @@ class GameOfLife:
         if len(spirits) == 0:
             return 0.0
         if self.algorithm == ALGORITHM_RANDOM:
-            return np.random.choice(a=[ON, OFF], p=[self.density, 1-self.density])
+            return np.random.uniform(low=0, high=0.5)
         else:
             return len([1 for spirit in spirits if self.grid[spirit.coordinate_x][spirit.coordinate_y]]) * 1.0 / len(spirits)
 
@@ -114,7 +116,7 @@ class GameOfLife:
 
     def get_spirit_cell(self, spirit):
         if self.algorithm == ALGORITHM_RANDOM:
-            return np.random.choice([ON, OFF], p=[self.density, 1-self.density])
+            return np.random.choice([ON, OFF], p=[0.1, 0.9])
         else:
             return self.get_grid_cell(spirit.coordinate_x, spirit.coordinate_y)
 

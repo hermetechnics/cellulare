@@ -34,7 +34,8 @@ button {
 }
 
 #grid {
-  font-size: 1.618em;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 label {

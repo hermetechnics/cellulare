@@ -5,16 +5,10 @@ precision mediump float;
 uniform float time;
 uniform vec2  resolution;
 uniform float glowiness;
-
-vec3 hsv2rgb(vec3 c)
-{
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
+uniform vec3 colour;
 
 void main(void){
-    vec3 destColor = vec3(0.1, 0.5, 0.3);
+    vec3 destColor = colour;
     vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
     float gradual_onset = min(time, 5.0) / 5.0;
     float l = 0.05 / abs(length(p) - 0.5) * glowiness * gradual_onset;

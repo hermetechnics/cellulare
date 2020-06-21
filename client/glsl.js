@@ -19,8 +19,9 @@ attribute vec4 aVertexPosition;
 void main() { gl_Position = aVertexPosition; }
 `;
 
-export const getRenderFunction = (context, uniformLocations) => (time, mouseX, mouseY, resolutionX, resolutionY, glowiness) => {
+export const getRenderFunction = (context, uniformLocations, colour) => (time, mouseX, mouseY, resolutionX, resolutionY, glowiness) => {
   // Clear the canvas before we start drawing on it.
+
   context.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
   context.clearDepth(1.0);                 // Clear everything
   context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
@@ -29,12 +30,20 @@ export const getRenderFunction = (context, uniformLocations) => (time, mouseX, m
   context.uniform2fv(uniformLocations.mouse, [mouseX, mouseY]);
   context.uniform1f(uniformLocations.time, time / 2000);
   context.uniform1f(uniformLocations.glowiness, glowiness);
+  context.uniform3fv(uniformLocations.colour, colour);
 
   context.viewport(0, 0, resolutionX, resolutionY);
   context.drawArrays(context.TRIANGLE_STRIP, 0, 4);
 };
 
 export const createRenderer = (fragmentShaderSource) => {
+
+  const colour_value = [
+    Math.random() * 0.5 + 0.3,
+    Math.random() * 0.5 + 0.3,
+    Math.random() * 0.5 + 0.3,
+  ];
+
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('webgl');
 
@@ -70,6 +79,7 @@ export const createRenderer = (fragmentShaderSource) => {
   const mouse = context.getUniformLocation(shaderProgram, 'mouse');
   const time = context.getUniformLocation(shaderProgram, 'time');
   const glowiness = context.getUniformLocation(shaderProgram, 'glowiness');
+  const colour = context.getUniformLocation(shaderProgram, 'colour');
 
   // Tell WebGL how to pull out the positions from the position
   // buffer into the vertexPosition attribute.
@@ -80,6 +90,6 @@ export const createRenderer = (fragmentShaderSource) => {
   // Tell WebGL to use our program when drawing
   context.useProgram(shaderProgram);
 
-  const draw = getRenderFunction(context, { resolution, mouse, time, glowiness });
+  const draw = getRenderFunction(context, { resolution, mouse, time, glowiness, colour }, colour_value) ;
   return { canvas, draw };
 };
