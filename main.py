@@ -20,6 +20,7 @@ paused = False
 
 game_of_life = None
 spirits = []
+current_activity = []
 server_count = 0
 
 """
@@ -48,16 +49,19 @@ async def background_task():
     """
     global server_count
     global spirits
+    global current_activity
+
     while True:
         await sio.sleep(1)
         if not paused:
             server_count += 1
             game_of_life.tick()
-            await sio.emit("grid", {'grid': game_of_life.get_grid_with_entities(spirits).tolist(),
+            await sio.emit("grid", {'grid': game_of_life.get_grid_with_entities(spirits, current_activity).tolist(),
                                     'count': server_count,
                                     'density': game_of_life.density,
-                                    'algorithm': game_of_life.algorithm})
-
+                                    'algorithm': game_of_life.algorithm,
+                                    })
+            current_activity = []
             spirit_factor = game_of_life.get_spirit_factor(spirits)
             for spirit in spirits:
                 await sio.emit('pulse', {'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
@@ -70,16 +74,22 @@ async def test_event(sid, message):
     print('received test_event from the client', message)
 
 
+@sio.on('unfreeze')
+def unfreeze_game(sid, data):
+
+    print("unfreezing game!")
+    game_of_life.density = float(data["density"])
+    game_of_life.reset_game()
+
 @sio.on('reset_game')
-def reset_game(sid, data):
+async def reset_game(sid, data):
     global server_count
     server_count = 0
 
     print("resetting game!")
     game_of_life.density = float(data["density"])
     game_of_life.algorithm = int(data["algorithm"])
-    game_of_life.reset_game()
-
+    await trigger_transition()
 
 @sio.on('pause')
 async def pause_resume_server(sid, data):
@@ -92,6 +102,9 @@ async def pause_resume_server(sid, data):
     print("paused: {}".format(paused))
 
 
+async def trigger_transition():
+    await sio.emit("transition_gamelan", {})
+
 async def trigger_call_back_drumming():
     await sio.emit("call_back_drumming", {})
 
@@ -103,12 +116,12 @@ async def resume_drumming():
 @sio.on('trigger_activity')
 def trigger_activity(sid, data):
     # TODO: if activity has some additional value than boolean parse here:
+    global current_activity
     activity = True
     if game_of_life.algorithm == ALGORITHM_FULL:
-        print("User triggered activity")
         spirit = next((s for s in spirits if s.client_id == sid), None)
         if spirit:
-            spirit.activate(activity)
+            spirit.activate(activity, current_activity)
 
 
 @sio.on('register_cell')

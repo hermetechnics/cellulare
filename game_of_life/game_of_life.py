@@ -29,10 +29,24 @@ class GameOfLife:
     def grid_init(self):
         return np.random.choice(a=[ON, OFF], size=(self.grid_size, self.grid_size), p=[self.density, 1-self.density])
 
-    def get_grid_with_entities(self, spirits):
+    def get_grid_with_entities(self, spirits, current_activity):
+        """
+        0 - black
+        1 - white
+        2 - green plant
+        3- red
+        4- blooming plant
+        """
         grid_with_spirits = self.grid.copy()
         for spirit in spirits:
-            grid_with_spirits[spirit.coordinate_x][spirit.coordinate_y] = 2
+            if grid_with_spirits[spirit.coordinate_x][spirit.coordinate_y] == ON:
+                grid_with_spirits[spirit.coordinate_x][spirit.coordinate_y] = 4
+            else:
+                grid_with_spirits[spirit.coordinate_x][spirit.coordinate_y] = 2
+
+        for coordinates in current_activity:
+            if grid_with_spirits[coordinates[0]][coordinates[1]] not in [2, 4]:
+                grid_with_spirits[coordinates[0]][coordinates[1]] = 3
 
         return grid_with_spirits
 
@@ -57,6 +71,8 @@ class GameOfLife:
                 self.empty_ticks = 0
 
             self.grid = new_grid
+        else:
+            self.reset_game()
 
     def get_neighbours(self, spirit):
         if self.algorithm == ALGORITHM_RANDOM:
@@ -120,9 +136,12 @@ class GameOfLife:
         else:
             return self.get_grid_cell(spirit.coordinate_x, spirit.coordinate_y)
 
-    def activate_neighbours(self, coordinate_x, coordinate_y):
+    def activate_neighbours(self, coordinate_x, coordinate_y, current_activity):
         """when activity is triggered, we randomly set OFF values in the proximity to ON"""
         coordinates = self.get_neighbour_coordinates_pairs(coordinate_x, coordinate_y)
         for coordinate in coordinates:
             if self.get_grid_cell(coordinate[0], coordinate[1]) == OFF:
-                self.set_grid_cell(coordinate[0], coordinate[1], np.random.choice([ON, OFF]))
+                random_switch = np.random.choice(a=[ON, OFF], p=[self.density, 1-self.density])
+                self.set_grid_cell(coordinate[0], coordinate[1], random_switch)
+                if random_switch:
+                    current_activity.append((coordinate[0], coordinate[1]))

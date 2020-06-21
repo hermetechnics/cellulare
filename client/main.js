@@ -43,10 +43,8 @@ const initAudioEngine = context => new Promise((nextStep) => {
 
     // set the visualisation glowiness
     setGlowiness(rms * 200);
-
-    if (context.pulse) {
-      context.socket.emit('trigger_activity', rms);
-    }
+    console.log('trigger activity');
+    context.socket.emit('trigger_activity', rms);
   };
 
   // THIS IS WHERE WE INITIALISE AUDIO
@@ -159,7 +157,7 @@ const initPulse = async context => {
       }
     }
 
-/*    for (const roll of range(0, numRolls)) {
+    for (const roll of range(0, numRolls)) {
       playBeat(gap + 4 * callbackLength + roll * rollPeriod);
     }
 
@@ -167,14 +165,23 @@ const initPulse = async context => {
       for (const i of range(0, 7)) {
         playBeat(gap + gap + numRolls * rollPeriod + i + callback * callbackLength + 4 * callbackLength);
       }
-    }*/
+    }
   }
 
   socket.on('call_back_drumming', callBack);
 
+
   socket.on('resume_drumming', data => {
     mainRhythm.start();
   });
+
+  socket.on('transition_gamelan', data => {
+    for (const i of range(0, 3)) {
+      audioEngine.playSample(loadedSamples.gamelan, i * 2);
+    }
+  });
+
+
 
   return { ...context, pulse: true };
 };

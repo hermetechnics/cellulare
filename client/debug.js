@@ -1,10 +1,13 @@
 const grid = document.getElementById('grid');
 const resetButton = document.getElementById('reset_game');
+const unfreezeButton = document.getElementById('unfreeze');
 const densitySlider = document.getElementById('density_slider');
 const pause = document.getElementById('pause');
 const radios = document.getElementsByName('algorithm');
 
 const toEmoji = char => {
+  if (parseInt(char) == '4') return '🌷';
+  if (parseInt(char) == '3') return '🟥';
   if (parseInt(char) == '2') return '🌱';
   if (parseInt(char) == '1') return  '⬜';
   else return '⬛';
@@ -45,6 +48,11 @@ const startApp = () => {
       }
     }
     socket.emit('reset_game', { density: densitySlider.value, algorithm: checked });
+  });
+
+
+  unfreezeButton.addEventListener('click', () => {
+    socket.emit('unfreeze', { data: 1 });
   });
 
   pause.addEventListener('click', () => {

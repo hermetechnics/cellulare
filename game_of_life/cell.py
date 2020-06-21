@@ -15,8 +15,8 @@ class Cell:
     def register_to_grid(self):
         self.game.grid[self.coordinate_x][self.coordinate_y] = SPIRIT
 
-    def activate(self, activity):
+    def activate(self, activity, current_activity=[]):
         if self.game.grid[self.coordinate_x][self.coordinate_y] == OFF:
             self.game.grid[self.coordinate_x][self.coordinate_y] = ON
         else:
-            self.game.activate_neighbours(self.coordinate_x, self.coordinate_y)
+            self.game.activate_neighbours(self.coordinate_x, self.coordinate_y, current_activity)

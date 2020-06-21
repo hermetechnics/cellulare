@@ -7,6 +7,7 @@ export const samples = {
   'rattle1': 'https://cellulare.s3.eu-central-1.amazonaws.com/samples/rattle_main.wav',
   'rattle2': 'https://cellulare.s3.eu-central-1.amazonaws.com/samples/rattle_main-1.wav',
   'rattle3': 'https://cellulare.s3.eu-central-1.amazonaws.com/samples/rattle_main-2.wav',
+  'gamelan' : 'https://cellulare.s3.eu-central-1.amazonaws.com/samples/gamelan.mp3',
 };
 
 export const microphoneStreamConfig = {
