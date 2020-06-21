@@ -144,27 +144,28 @@ const initPulse = async context => {
 
   // sequence.start();
 
-  window.callBack = () => {
+  window.callBack = async () => {
     console.log("call back");
     mainRhythm.stop();
 
     const callbackLength = 13;
     const rollPeriod = 0.8;
     const numRolls = 300;
+    const gap = 3;
 
     for (const callback of range(0, 4)) {
       for (const i of range(0, 7)) {
-        playBeat(i + callback * callbackLength);
+        playBeat(gap + i + callback * callbackLength);
       }
     }
 
     for (const roll of range(0, numRolls)) {
-      playBeat(4 * callbackLength + roll * rollPeriod);
+      playBeat(gap + 4 * callbackLength + roll * rollPeriod);
     }
 
     for (const callback of range(0, 4)) {
       for (const i of range(0, 7)) {
-        playBeat(3 + numRolls * rollPeriod + i + callback * callbackLength + 4 * callbackLength);
+        playBeat(gap + gap + numRolls * rollPeriod + i + callback * callbackLength + 4 * callbackLength);
       }
     }
   }
