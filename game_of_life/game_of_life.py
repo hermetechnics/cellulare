@@ -58,7 +58,7 @@ class GameOfLife:
 
     def get_neighbours(self, spirit):
         if self.algorithm == ALGORITHM_RANDOM:
-            return random.choice([ON, OFF], p=[self.density, 1-self.density])
+            return [np.random.choice(a=[ON, OFF], p=[self.density, 1-self.density]) for i in range(8)]
         else:
             coordinates = self.get_neighbour_coordinates_pairs(spirit.coordinate_x, spirit.coordinate_y)
             return [self.get_grid_cell(coordinate[0], coordinate[1]) for coordinate in coordinates]
@@ -77,7 +77,7 @@ class GameOfLife:
         if len(spirits) == 0:
             return 0.0
         if self.algorithm == ALGORITHM_RANDOM:
-            return random.choice([ON, OFF], p=[self.density, 1-self.density])
+            return np.random.choice(a=[ON, OFF], p=[self.density, 1-self.density])
         else:
             return len([1 for spirit in spirits if self.grid[spirit.coordinate_x][spirit.coordinate_y]]) * 1.0 / len(spirits)
 
@@ -114,7 +114,7 @@ class GameOfLife:
 
     def get_spirit_cell(self, spirit):
         if self.algorithm == ALGORITHM_RANDOM:
-            return random.choice([ON, OFF], p=[self.density, 1-self.density])
+            return np.random.choice([ON, OFF], p=[self.density, 1-self.density])
         else:
             return self.get_grid_cell(spirit.coordinate_x, spirit.coordinate_y)
 
@@ -123,4 +123,4 @@ class GameOfLife:
         coordinates = self.get_neighbour_coordinates_pairs(coordinate_x, coordinate_y)
         for coordinate in coordinates:
             if self.get_grid_cell(coordinate[0], coordinate[1]) == OFF:
-                self.set_grid_cell(coordinate[0], coordinate[1], random.choice([ON, OFF]))
+                self.set_grid_cell(coordinate[0], coordinate[1], np.random.choice([ON, OFF]))

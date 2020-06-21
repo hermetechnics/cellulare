@@ -31,13 +31,16 @@ IDEAS:
 - 'resonance' between two entities firing in the same time
 """
 
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html")
 
+
 class DebugHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("debug.html")
+
 
 async def background_task():
     """Example of how to send server generated events to clients.
@@ -50,20 +53,22 @@ async def background_task():
         if not paused:
             server_count += 1
             game_of_life.tick()
-            await sio.emit("grid", { 'grid': game_of_life.get_grid_with_entities(spirits).tolist(),
-                                     'count': server_count,
-                                     'density': game_of_life.density,
-                                     'algorithm': game_of_life.algorithm})
+            await sio.emit("grid", {'grid': game_of_life.get_grid_with_entities(spirits).tolist(),
+                                    'count': server_count,
+                                    'density': game_of_life.density,
+                                    'algorithm': game_of_life.algorithm})
 
             spirit_factor = game_of_life.get_spirit_factor(spirits)
             for spirit in spirits:
-                await sio.emit('pulse', { 'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
-                                          'neighbours': "{}".format(game_of_life.get_neighbours(spirit)),
-                                          'spirit_factor': "{}".format(spirit_factor)}, room=spirit.client_id)
+                await sio.emit('pulse', {'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
+                                         'neighbours': "{}".format(game_of_life.get_neighbours(spirit)),
+                                         'spirit_factor': "{}".format(spirit_factor)}, room=spirit.client_id)
+
 
 @sio.event
 async def test_event(sid, message):
     print('received test_event from the client', message)
+
 
 @sio.on('reset_game')
 def reset_game(sid, data):
@@ -75,11 +80,25 @@ def reset_game(sid, data):
     game_of_life.algorithm = int(data["algorithm"])
     game_of_life.reset_game()
 
+
 @sio.on('pause')
-def reset_game(sid, data):
+async def pause_resume_server(sid, data):
     global paused
     paused = not paused
+    if paused:
+        await trigger_call_back_drumming()
+    else:
+        await resume_drumming()
     print("paused: {}".format(paused))
+
+
+async def trigger_call_back_drumming():
+    await sio.emit("call_back_drumming", {})
+
+
+async def resume_drumming():
+    await sio.emit("resume_drumming", {})
+
 
 @sio.on('trigger_activity')
 def trigger_activity(sid, data):
@@ -91,15 +110,18 @@ def trigger_activity(sid, data):
         if spirit:
             spirit.activate(activity)
 
+
 @sio.on('register_cell')
 def trigger_activity(sid):
     print('new cell')
     new_cell = Cell(game=game_of_life, client_id=sid)
     spirits.append(new_cell)
 
+
 @sio.event
 async def connect(sid, environ):
     print('Client connected', sid)
+
 
 @sio.event
 def disconnect(sid):
@@ -107,6 +129,7 @@ def disconnect(sid):
     new_spirits = [s for s in spirits if s.client_id != sid]
     spirits = new_spirits
     print('Client disconnected')
+
 
 def main():
     parse_command_line()
