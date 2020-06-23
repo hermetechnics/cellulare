@@ -8,6 +8,8 @@ const startAudioButton = document.getElementById('start-audio');
 const introSection = document.getElementById('intro-section');
 const audioSetupSection = document.getElementById('audio-init');
 const audioReadyButton = document.getElementById('audio-init-ready');
+const experimentInitSection = document.getElementById('experiment-init');
+const experimentReadyButton = document.getElementById('experiment-init-ready');
 const thresholdIndicator = document.getElementById('threshold-indicator');
 const thresholdSlider = document.getElementById('bd-threshold-slider');
 
@@ -72,9 +74,18 @@ const initAudioSetup = context => new Promise((nextStep) => {
 
   audioReadyButton.addEventListener('click', () => {
     audioSetupSection.hidden = true;
-    startAnimating();
     nextStep(context);
   });
+});
+
+const initExperimentIntro = context => new Promise((nextStep) => {
+  experimentInitSection.hidden = false;
+
+  experimentReadyButton.addEventListener('click', () => {
+    experimentInitSection.hidden = true;
+    startAnimating();
+    nextStep(context);
+  })
 });
 
 const initPulse = async context => {
@@ -181,8 +192,6 @@ const initPulse = async context => {
     }
   });
 
-
-
   return { ...context, pulse: true };
 };
 
@@ -213,6 +222,7 @@ init([
   initSocket,
   initAudioEngine,
   initAudioSetup,
+  initExperimentIntro,
   initPulse,
   initExperimentInterface,
 ]);

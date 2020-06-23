@@ -52,6 +52,8 @@ p {
   width: 2rem;
   border: solid 2px red;
   border-radius: 100%;
+  float: left;
+  margin-right: 1rem;
 }
 
 #threshold-setup-wrapper {
@@ -61,4 +63,11 @@ p {
 
 #threshold-setup-wrapper > * + * {
   margin-left: 1rem;
+}
+
+#experiment-init-ready {
+  display: block;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0 auto;
 }

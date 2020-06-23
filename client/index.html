@@ -23,18 +23,33 @@
       <h2>Let's set up the sound first</h2>
       <p>The experiment uses the signal from your computer's microphone to interact with the network.</p>
       <p>We take privacy seriously &mdash; the audio itself never leaves your computer.
-        The app merely detects when a loud sound occurs. The indicator below will blink when a sound is detected.</p>
-      <div id="threshold-indicator"></div>
-      <p>Try moving the slider below, adjusting it so that the indicator only blinks when you speak, or make a noise with your rattle.</p>
+        The app merely detects when a loud sound occurs.</p>
+      <p>The red circle indicator below will blink when a sound is detected.
+        Try moving the "Detection" slider, adjusting it so that the indicator only blinks when you speak, or make a noise with your rattle.</p>
       <form>
-        <label for="bd-threshold-slider">Detection sensitivity</label>
+        <div id="threshold-indicator"></div>
+        <label for="bd-threshold-slider">Detection</label>
         <div id="threshold-setup-wrapper">
           <div>Most sensitive</div>
           <input type="range" min="0" max="0.3" value="0.01" step="0.001" id="bd-threshold-slider" name="bd-threshold-slider" />
           <div>Least sensitive</div>
         </div>
       </form>
+      <p><em>If you experience any technical issues, you can safely refresh the page and rejoin the experiment.</em></p>
       <p><button id="audio-init-ready">I'm ready ✔</button></p>
+    </section>
+
+    <section id="experiment-init" hidden>
+      <h2>Instructions</h2>
+      <p>In this experiment, our objective is to journey in non-ordinary reality,
+        enter the networked space that connects all participants, and perceive what is there.</p>
+      <p>You will hear the processes within the network manifested in a sonic accompaniment, based on traditional shamanic drumming.
+        If possible, take a rattle or a drum, and play along. The sounds you create will be detected,
+        and will have an impact on what's going on inside of the network.</p>
+      <p>The experiment is divided into three equally long parts, denoted by three strokes of a bell.
+        You do not need to react to these changes, but be mindful of the new section when it begins.</p>
+      <p>At the end, you shall hear the traditional callback signal.</p>
+      <p><button id="experiment-init-ready">Enter the experiment</button></p>
     </section>
   </main>
 </body>
