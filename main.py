@@ -16,6 +16,8 @@ define("debug", default=False, help="run in debug mode")
 
 sio = socketio.AsyncServer(async_mode='tornado')
 
+PULSE_DURATION_SEC = 1
+
 paused = False
 
 game_of_life = None
@@ -52,21 +54,24 @@ async def background_task():
     global current_activity
 
     while True:
-        await sio.sleep(1)
-        if not paused:
-            server_count += 1
-            game_of_life.tick()
-            await sio.emit("grid", {'grid': game_of_life.get_grid_with_entities(spirits, current_activity).tolist(),
-                                    'count': server_count,
-                                    'density': game_of_life.density,
-                                    'algorithm': game_of_life.algorithm,
-                                    })
-            current_activity = []
-            spirit_factor = game_of_life.get_spirit_factor(spirits)
-            for spirit in spirits:
-                await sio.emit('pulse', {'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
-                                         'neighbours': "{}".format(game_of_life.get_neighbours(spirit)),
-                                         'spirit_factor': "{}".format(spirit_factor)}, room=spirit.client_id)
+        await sio.sleep(PULSE_DURATION_SEC)
+        try:
+            if not paused:
+                server_count += 1
+                game_of_life.tick()
+                await sio.emit("grid", {'grid': game_of_life.get_grid_with_entities(spirits, current_activity).tolist(),
+                                        'count': server_count,
+                                        'density': game_of_life.density,
+                                        'algorithm': game_of_life.algorithm,
+                                        })
+                current_activity = []
+                spirit_factor = game_of_life.get_spirit_factor(spirits)
+                for spirit in spirits:
+                    await sio.emit('pulse', {'my_cell': "{}".format(game_of_life.get_spirit_cell(spirit)),
+                                            'neighbours': "{}".format(game_of_life.get_neighbours(spirit)),
+                                            'spirit_factor': "{}".format(spirit_factor)}, room=spirit.client_id)
+        except:
+            print("error while running background task")
 
 
 @sio.event
@@ -76,30 +81,38 @@ async def test_event(sid, message):
 
 @sio.on('unfreeze')
 def unfreeze_game(sid, data):
-
-    print("unfreezing game!")
-    game_of_life.density = float(data.get("density", game_of_life.density))
-    game_of_life.reset_game()
+    try:
+        print("unfreezing game!")
+        game_of_life.density = float(data.get("density", game_of_life.density))
+        game_of_life.reset_game()
+    except:
+        print("error unfreezing game")
 
 @sio.on('reset_game')
 async def reset_game(sid, data):
-    global server_count
-    server_count = 0
+    try:
+        global server_count
+        server_count = 0
 
-    print("resetting game!")
-    game_of_life.density = float(data.get("density", game_of_life.density))
-    game_of_life.algorithm = int(data.get("algorithm", game_of_life.algorithm))
-    await trigger_transition()
+        print("resetting game!")
+        game_of_life.density = float(data.get("density", game_of_life.density))
+        game_of_life.algorithm = int(data.get("algorithm", game_of_life.algorithm))
+        await trigger_transition()
+    except:
+        print("error reseting game")
 
 @sio.on('pause')
 async def pause_resume_server(sid, data):
-    global paused
-    paused = not paused
-    if paused:
-        await trigger_call_back_drumming()
-    else:
-        await resume_drumming()
-    print("paused: {}".format(paused))
+    try:
+        global paused
+        paused = not paused
+        if paused:
+            await trigger_call_back_drumming()
+        else:
+            await resume_drumming()
+        print("paused: {}".format(paused))
+    except:
+        print("error pausing game")
 
 
 async def trigger_transition():
@@ -115,20 +128,26 @@ async def resume_drumming():
 
 @sio.on('trigger_activity')
 def trigger_activity(sid, data):
-    # TODO: if activity has some additional value than boolean parse here:
-    global current_activity
-    activity = True
-    if game_of_life.algorithm == ALGORITHM_FULL:
-        spirit = next((s for s in spirits if s.client_id == sid), None)
-        if spirit:
-            spirit.activate(activity, current_activity)
+    try:
+        # TODO: if activity has some additional value than boolean parse here:
+        global current_activity
+        activity = True
+        if game_of_life.algorithm == ALGORITHM_FULL:
+            spirit = next((s for s in spirits if s.client_id == sid), None)
+            if spirit:
+                spirit.activate(activity, current_activity)
+    except:
+        print("error triggering activity")
 
 
 @sio.on('register_cell')
-def trigger_activity(sid):
-    print('new cell')
-    new_cell = Cell(game=game_of_life, client_id=sid)
-    spirits.append(new_cell)
+def register_cell(sid):
+    try:
+        print('new cell')
+        new_cell = Cell(game=game_of_life, client_id=sid)
+        spirits.append(new_cell)
+    except:
+        print("error registering cell")
 
 
 @sio.event
@@ -138,10 +157,13 @@ async def connect(sid, environ):
 
 @sio.event
 def disconnect(sid):
-    global spirits
-    new_spirits = [s for s in spirits if s.client_id != sid]
-    spirits = new_spirits
-    print('Client disconnected')
+    try:
+        global spirits
+        new_spirits = [s for s in spirits if s.client_id != sid]
+        spirits = new_spirits
+        print('Client disconnected')
+    except:
+        print("error disconnecting client")
 
 
 def main():
