@@ -78,7 +78,7 @@ async def test_event(sid, message):
 def unfreeze_game(sid, data):
 
     print("unfreezing game!")
-    game_of_life.density = float(data["density"])
+    game_of_life.density = float(data.get("density", game_of_life.density))
     game_of_life.reset_game()
 
 @sio.on('reset_game')
@@ -87,8 +87,8 @@ async def reset_game(sid, data):
     server_count = 0
 
     print("resetting game!")
-    game_of_life.density = float(data["density"])
-    game_of_life.algorithm = int(data["algorithm"])
+    game_of_life.density = float(data.get("density", game_of_life.density))
+    game_of_life.algorithm = int(data.get("algorithm", game_of_life.algorithm))
     await trigger_transition()
 
 @sio.on('pause')
