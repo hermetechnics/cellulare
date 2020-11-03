@@ -12,16 +12,16 @@ void main(void){
     vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
     float gradual_onset = min(time, 5.0) / 5.0;
     float l = 0.05 / abs(length(p) - 0.5) * glowiness * gradual_onset;
-    gl_FragColor = vec4(l*destColor, 1.0);
+    gl_FragColor = vec4(destColor * 0.05 / abs(length(p) - 0.5) * glowiness, 1.0);
 }`;
 
 const { canvas, draw } = createRenderer(shader);
 canvas.id = 'animation-canvas';
 document.body.appendChild(canvas);
 
-const dampened = speed => {
-  let target = 0;
-  let value = 0;
+const dampened = (speed, initial = 0) => {
+  let target = initial;
+  let value = initial;
   return {
     setTarget: t => target = t,
     getValue: v => value,
@@ -32,7 +32,7 @@ const dampened = speed => {
 const dampeningFactor = 0.08;
 const MouseX = dampened(dampeningFactor);
 const MouseY = dampened(dampeningFactor);
-const Glowiness = dampened(dampeningFactor);
+const Glowiness = dampened(dampeningFactor, 0.1);
 
 const onWindowResize = () => {
   canvas.width = window.innerWidth;
