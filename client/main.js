@@ -159,7 +159,7 @@ const initPulse = async context => {
 
     const callbackLength = 13;
     const rollPeriod = 0.8;
-    const numRolls = 300;
+    const numRolls = 200;
     const gap = 3;
 
     for (const callback of range(0, 4)) {
