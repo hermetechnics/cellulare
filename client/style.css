@@ -46,6 +46,11 @@ p {
   line-height: 1.5;
 }
 
+a {
+  color: white;
+  font-weight: bold;
+}
+
 #threshold-indicator {
   background: transparent;
   height: 2rem;
@@ -66,7 +71,7 @@ p {
 }
 
 #experiment-init-ready {
-  display: block;
+  display: none;
   font-size: 1.2em;
   font-weight: bold;
   margin: 0 auto;
