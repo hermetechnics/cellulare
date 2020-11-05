@@ -1,5 +1,6 @@
 const grid = document.getElementById('grid');
-const resetButton = document.getElementById('reset_game');
+const saveSettingsButton = document.getElementById('save-settings');
+const gamelanButton = document.getElementById('gamelan');
 const unfreezeButton = document.getElementById('unfreeze');
 const densitySlider = document.getElementById('density_slider');
 const pause = document.getElementById('pause');
@@ -38,8 +39,8 @@ const startApp = () => {
         `;
       });
 
-  resetButton.addEventListener('click', () => {
-    console.info("reset!")
+  saveSettingsButton.addEventListener('click', () => {
+    console.info("save_settings")
     var checked = -1;
     for (var i = 0, length = radios.length; i < length; i++) {
       if (radios[i].checked) {
@@ -47,7 +48,7 @@ const startApp = () => {
         break;
       }
     }
-    socket.emit('reset_game', { density: densitySlider.value, algorithm: checked });
+    socket.emit('save_settings', { density: densitySlider.value, algorithm: checked });
   });
 
 
@@ -59,6 +60,9 @@ const startApp = () => {
     socket.emit('pause', { data: 1 });
   });
 
+  gamelanButton.addEventListener('click', () => {
+    socket.emit('gamelan_bells', { data: 1 });
+  });
 };
 
 startApp();
