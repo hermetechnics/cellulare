@@ -83,13 +83,19 @@ async def test_event(sid, message):
 def unfreeze_game(sid, data):
     try:
         print("unfreezing game!")
-        game_of_life.density = float(data.get("density", game_of_life.density))
         game_of_life.reset_game()
     except:
         print("error unfreezing game")
 
-@sio.on('reset_game')
-async def reset_game(sid, data):
+@sio.on('gamelan_bells')
+async def gamelan(sid, data=None):
+    try:
+        await trigger_transition()
+    except:
+        print("ERROR. gamelan't!!!")
+    
+@sio.on('save_settings')
+def reset_game(sid, data):
     try:
         global server_count
         server_count = 0
@@ -97,7 +103,6 @@ async def reset_game(sid, data):
         print("resetting game!")
         game_of_life.density = float(data.get("density", game_of_life.density))
         game_of_life.algorithm = int(data.get("algorithm", game_of_life.algorithm))
-        await trigger_transition()
     except:
         print("error reseting game")
 
