@@ -90,6 +90,7 @@ def unfreeze_game(sid, data):
 @sio.on('gamelan_bells')
 async def gamelan(sid, data=None):
     try:
+        print("gamelan jaa!!!")
         await trigger_transition()
     except:
         print("ERROR. gamelan't!!!")
